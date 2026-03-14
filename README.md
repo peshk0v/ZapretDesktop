@@ -1,5 +1,6 @@
 # Zapret Desktop
 
+![APP](https://github.com/peshk0v/ZapretDesktop/blob/main/web/style/content/image.png?raw=true)
 <!-- ![Zapret Logo](https://example.com/logo.png)  Замените на реальный URL изображения, если нужно -->
 
 ## Описание приложения
