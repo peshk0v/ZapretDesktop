@@ -1,0 +1,2 @@
+# ZapretDesktop
+Application for zapret
