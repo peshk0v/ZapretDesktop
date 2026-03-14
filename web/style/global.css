@@ -1,0 +1,342 @@
+@font-face {
+  font-family: "JB";
+  src: url("content/JetBrainsMonoNerdFont-Medium.ttf") format("truetype");
+  font-style: normal;
+  font-weight: normal;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "JB", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.app {
+    display: flex;
+    width: 100%;
+    max-width: 1200px;
+    height: 80vh;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 30px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 240px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 20px 0;
+}
+
+.sidebar-header {
+    padding: 0 20px 20px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.sidebar-nav {
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: rgba(0, 0, 0, 0.7);
+    padding: 12px 15px;
+    text-align: left;
+    font-size: 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #000;
+}
+
+.nav-btn.active {
+    background: rgba(255, 255, 255, 0.4);
+    color: #000;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.content {
+    flex: 1;
+    position: relative;
+    padding: 0;
+}
+
+.page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0; /* убрали паддинг – он теперь на внутренних контейнерах */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+    overflow: hidden; /* запрещаем скролл на самом page */
+    box-sizing: border-box;
+}
+
+.page.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Внутренний контейнер для страниц с обычным скроллом */
+.page-content {
+    height: 100%;
+    padding: 30px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+/* Стили для скроллбара (webkit) */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: rgba(0, 0, 0, 0.8);
+}
+
+.obname-card {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    padding: 25px;
+    margin: 20px 0;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.obname-label {
+    font-size: 0.9rem;
+    color: rgba(0, 0, 0, 0.6);
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+.obname-value {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #4a3aff;
+    text-shadow: 0 2px 5px rgba(74, 58, 255, 0.2);
+}
+
+.status-area {
+    margin: 30px 0;
+    text-align: center;
+}
+
+.action-btn {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: #4a3aff;
+    padding: 12px 40px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(1.02);
+}
+
+.action-btn.stopped {
+    color: #ff3b30;
+}
+
+.status-text {
+    margin-top: 10px;
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 0.9rem;
+}
+
+.autostart-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 30px;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 26px;
+    transition: .2s;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: .2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+input:checked + .slider {
+    background-color: rgba(74, 58, 255, 0.6);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Страница обходов */
+.bypasses-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 30px; /* отступы как у других страниц */
+    box-sizing: border-box;
+}
+
+.current-bypass {
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.current-label {
+    font-size: 0.9rem;
+    color: rgba(0, 0, 0, 0.6);
+    margin-bottom: 5px;
+}
+
+.current-obname {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #4a3aff;
+}
+
+.bypasses-list {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bypass-card {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgba(0, 0, 0, 0.8);
+    font-weight: 500;
+}
+
+.bypass-card:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.bypass-card.selected {
+    background: rgba(74, 58, 255, 0.3);
+    border-color: #4a3aff;
+}
+
+.bypass-card.current {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.save-button-container {
+    flex-shrink: 0;
+    text-align: center;
+    padding: 10px 0;
+}

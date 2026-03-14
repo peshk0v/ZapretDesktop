@@ -1,3 +1,5 @@
 {
-    "zapretDYRepo": "Flowseal/zapret-discord-youtube"
+    "zapretDYRepo": "Flowseal/zapret-discord-youtube",
+    "appearance": "system",
+    "colors": "dark-blue"
 }

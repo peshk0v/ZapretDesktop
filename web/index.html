@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZapretDesktop</title>
+    <link rel="stylesheet" href="style/global.css">
+    <script type="text/javascript" src="/eel.js"></script>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="sidebar-header">Меню</div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-page="home">Главная</button>
+                <button class="nav-btn" data-page="services">Сервисы</button>
+                <button class="nav-btn" data-page="bypasses">Обходы</button>
+                <button class="nav-btn" data-page="settings">Настройки</button>
+            </nav>
+        </aside>
+        <main class="content">
+            <div id="home-page" class="page active">
+                <div class="page-content">
+                    <h1>Главная</h1>
+                    <div class="obname-card">
+                        <div class="obname-label">Текущий обход</div>
+                        <div id="obname-value" class="obname-value">Загрузка...</div>
+                    </div>
+                    <div class="status-area">
+                        <button id="toggle-btn" class="action-btn">Загрузка...</button>
+                        <div id="status-text" class="status-text"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="services-page" class="page">
+                <div class="page-content">
+                    <h1>Сервисы</h1>
+                    <p>Скоро здесь появятся настройки сервисов...</p>
+                </div>
+            </div>
+            <div id="bypasses-page" class="page">
+                <div class="bypasses-container">
+                    <div class="current-bypass">
+                        <div class="current-label">Текущий обход</div>
+                        <div id="current-obname" class="current-obname">Загрузка...</div>
+                    </div>
+                    <div class="bypasses-list" id="bypasses-list"></div>
+                    <div class="save-button-container" id="save-button-container" style="display: none;">
+                        <button id="save-bypass-btn" class="action-btn">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+            <div id="settings-page" class="page">
+                <div class="page-content">
+                    <h1>Настройки</h1>
+                    <p>Скоро здесь появятся настройки приложения...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="index.js"></script>
+</body>
+</html>
