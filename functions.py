@@ -38,6 +38,13 @@ def setAutostart(enblt):
     else:
         sv.remove()
 
+def getservc():
+    with open("services.json") as f:
+        return json.load(f)
+
+def setservc(dta):
+    print(dta)
+
 def getCurrent():
     with open("current.zapret", "r") as f:
         return f.read()

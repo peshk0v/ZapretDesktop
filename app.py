@@ -38,4 +38,13 @@ def set_obname(name):
     fn.setObName(name)
     return True
 
+@eel.expose
+def getservc():
+    return fn.getservc()
+
+@eel.expose
+def setservc(data):
+    fn.setservc(data)
+    return True
+
 eel.start('index.html', mode='edge')

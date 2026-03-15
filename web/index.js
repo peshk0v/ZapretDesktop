@@ -3,6 +3,8 @@ let zapretActive = false;
 let currentObName = '';
 let selectedObName = null;
 let oblist = [];
+let servicesList = [];
+let servicesChanged = false;
 
 function switchPage(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -16,6 +18,8 @@ function switchPage(page) {
         loadBypasses();
     } else if (page === 'home') {
         updateUI();
+    } else if (page === 'services') {
+        loadServices();
     }
 }
 
@@ -116,6 +120,129 @@ async function saveBypass() {
     }
 }
 
+async function loadServices() {
+    servicesList = await eel.getservc()();
+    servicesChanged = false;
+    document.getElementById('services-save-button-container').style.display = 'none';
+    renderServicesList(servicesList);
+}
+
+function renderServicesList(services) {
+    const container = document.getElementById('services-list');
+    container.innerHTML = '';
+
+    services.forEach((service) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'service-wrapper';
+
+        // Карточка
+        const card = document.createElement('div');
+        card.className = 'service-card';
+
+        // Иконка
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'service-icon';
+        if (service.Icon) {
+            iconDiv.style.backgroundImage = `url('${service.Icon}')`;
+        } else {
+            iconDiv.style.backgroundColor = '#4a3aff';
+            iconDiv.textContent = service.Name.charAt(0).toUpperCase();
+        }
+
+        // Название
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'service-name';
+        nameSpan.textContent = service.Name;
+
+        // Тумблер
+        const switchLabel = document.createElement('label');
+        switchLabel.className = 'switch';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = service.Enabled;
+        checkbox.addEventListener('change', (e) => {
+            e.stopPropagation();
+            if (!servicesChanged) {
+                servicesChanged = true;
+                document.getElementById('services-save-button-container').style.display = 'block';
+            }
+        });
+        const slider = document.createElement('span');
+        slider.className = 'slider';
+        switchLabel.appendChild(checkbox);
+        switchLabel.appendChild(slider);
+
+        const arrowSpan = document.createElement('span');
+        arrowSpan.className = 'service-arrow';
+        arrowSpan.textContent = '\uf0ab';
+
+        card.appendChild(iconDiv);
+        card.appendChild(nameSpan);
+        card.appendChild(arrowSpan);
+        card.appendChild(switchLabel);
+
+        // Блок IP (теперь отдельно от карточки)
+        const ipsContainer = document.createElement('div');
+        ipsContainer.className = 'service-ips';
+        if (service.IPS && service.IPS.length > 0) {
+            service.IPS.forEach(ip => {
+                const ipItem = document.createElement('div');
+                ipItem.className = 'ip-item';
+                ipItem.textContent = ip;
+                ipsContainer.appendChild(ipItem);
+            });
+        }
+
+        wrapper.appendChild(card);
+        wrapper.appendChild(ipsContainer);
+
+        card.addEventListener('click', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.closest('.switch')) {
+                return;
+            }
+            toggleIPList(wrapper);
+        });
+
+        container.appendChild(wrapper);
+    });
+}
+
+function toggleIPList(wrapper) {
+    const ipsContainer = wrapper.querySelector('.service-ips');
+    if (!ipsContainer) return;
+
+    if (ipsContainer.classList.contains('expanded')) {
+        ipsContainer.classList.remove('expanded');
+        ipsContainer.style.maxHeight = '0';
+        ipsContainer.style.marginTop = '0';
+    } else {
+        ipsContainer.classList.add('expanded');
+        ipsContainer.style.maxHeight = '0';
+        ipsContainer.style.marginTop = '0';
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const scrollHeight = ipsContainer.scrollHeight;
+                ipsContainer.style.maxHeight = scrollHeight + 'px';
+                ipsContainer.style.marginTop = '-10px';
+            });
+        });
+    }
+
+    const arrow = wrapper.querySelector('.service-card .service-arrow');
+    if (arrow) {
+        arrow.textContent = ipsContainer.classList.contains('expanded') ? '\uf0aa' : '\uf0ab';
+    }
+}
+
+async function saveServices() {
+    const checkboxes = document.querySelectorAll('#services-list .service-card input[type="checkbox"]');
+    const enabledStates = Array.from(checkboxes).map(cb => cb.checked);
+    await eel.setservc(enabledStates)();
+    servicesChanged = false;
+    document.getElementById('services-save-button-container').style.display = 'none';
+    await loadServices();
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -125,6 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await updateUI();
 
+    document.getElementById('save-services-btn').addEventListener('click', saveServices);
     document.getElementById('toggle-btn').addEventListener('click', handleToggle);
     document.getElementById('autostart-checkbox').addEventListener('change', handleAutostart);
     document.getElementById('save-bypass-btn').addEventListener('click', saveBypass);

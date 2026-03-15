@@ -1,0 +1,14 @@
+[
+    {
+        "Name":"SoundCloud", "Enabled":true, "Icon":"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Flogospng.org%2Fdownload%2Fsoundcloud%2Flogo-soundcloud-4096.png&f=1&nofb=1&ipt=71f25b173a51e4caa206f757188dda2fdc00ffc047f3c98351a36d1ab71a15c3",
+        "IPS":["soundcloud.com", "*.soundcloud.com", "sndcdn.com", "*.sndcdn.com"]
+    },
+    {
+        "Name":"CloudFlare", "Enabled":true, "Icon":"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fregistry.npmmirror.com%2F%40lobehub%2Ficons-static-png%2Flatest%2Ffiles%2Fdark%2Fcloudflare-color.png&f=1&nofb=1&ipt=5c2814ffad446d742a810eef9df02feda2e660f860cdbfacce55f1c9686aa1ae",
+        "IPS":["cloudflare-ech.com","encryptedsni.com","cloudflareaccess.com","cloudflareapps.com","cloudflarebolt.com","cloudflareclient.com","cloudflareinsights.com","cloudflareok.com","cloudflarepartners.com","cloudflareportal.com","cloudflarepreview.com","cloudflareresolve.com","cloudflaressl.com","cloudflarestatus.com","cloudflarestorage.com","cloudflarestream.com","cloudflarestream.com","cloudflaretest.com"]
+    },
+    {
+        "Name":"Discord", "Enabled":true, "Icon":"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fstatic.vecteezy.com%2Fsystem%2Fresources%2Fpreviews%2F006%2F892%2F625%2Foriginal%2Fdiscord-logo-icon-editorial-free-vector.jpg&f=1&nofb=1&ipt=2efb95b1a48ec6e53fabc233672566fd1bb46a5e473bd01c55b3d0dc7c45ff10",
+        "IPS":["dis.gd", "discord-attachments-uploads-prd.storage.googleapis.com","discord.app","discord.co","discord.com","discord.design","discord.dev","discord.dev","discord.gift","discord.gifts","discord.gg","discord.media","discord.new","discord.store","discord.status","discord-activities.com","discordactivities.com","discordapp.com","discordapp.net","discordcdn.com","discordmerch.com","discordpartygames.com","discordsays.com","discordsez.com","discordstatus.com"]
+    }
+]
