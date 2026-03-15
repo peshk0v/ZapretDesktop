@@ -12,7 +12,7 @@
     },
     {
         "Name": "CloudFlare",
-        "Enabled": false,
+        "Enabled": true,
         "Icon": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fregistry.npmmirror.com%2F%40lobehub%2Ficons-static-png%2Flatest%2Ffiles%2Fdark%2Fcloudflare-color.png&f=1&nofb=1&ipt=5c2814ffad446d742a810eef9df02feda2e660f860cdbfacce55f1c9686aa1ae",
         "IPS": [
             "cloudflare-ech.com",
@@ -85,6 +85,33 @@
             "7tv.app",
             "7tv.io",
             "localizeapi.com"
+        ]
+    },
+    {
+        "Name": "Roblox | SWITCH IPSET TO ANY!",
+        "Enabled": true,
+        "Icon": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fvectorified.com%2Fimages%2Froblox-icon-3.jpg&f=1&nofb=1&ipt=4d5ed613f27e98b2e552adc6b3cdfbe7cda75581e3095c65b645cd74df840519",
+        "IPS": [
+            "roblox.com",
+            "www.roblox.com",
+            "rbxcdn.com",
+            "rbxinfra.net",
+            "rbxtrk.com",
+            "roblox.co.uk",
+            "roblox.us",
+            "roblox.de",
+            "roblox.fr",
+            "roblox.jp",
+            "roblox.tv",
+            "css.rbxcdn.com",
+            "js.rbxcdn.com",
+            "ecsv2.roblox.com",
+            "metrics.roblox.com",
+            "apis.roblox.com",
+            "realtime-signalr.roblox.com",
+            "games.roblox.com",
+            "tr.rbxcdn.com",
+            "thumbnails.roblox.com"
         ]
     }
 ]

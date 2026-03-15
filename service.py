@@ -7,6 +7,7 @@ import subprocess
 import sys
 import ctypes
 import time
+import os
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
@@ -296,16 +297,103 @@ def get_autostart_status() -> bool:
                 return False
     return False
 
+# ==================== IPSet управление ====================
+
+def ipset_switch_status() -> str:
+    """
+    Определяет состояние ipset-фильтра:
+    - "loaded" - загружен нормальный список
+    - "none" - список содержит только заглушку 203.0.113.113/32
+    - "any" - пустой список (разрешены все)
+    """
+    list_file = DATA_DIR / "lists" / "ipset-all.txt"
+    if not list_file.exists():
+        return "any"
+    lines = list_file.read_text(encoding='utf-8').splitlines()
+    if not lines:
+        return "any"
+    if len(lines) == 1 and lines[0].strip() == "203.0.113.113/32":
+        return "none"
+    return "loaded"
+
+def set_ipset_mode(mode: str) -> bool:
+    """
+    Устанавливает желаемый режим ipset-фильтра.
+    mode: "loaded", "none", "any"
+    Возвращает True при успехе, False при ошибке.
+    """
+    require_admin()
+    valid_modes = ["loaded", "none", "any"]
+    if mode not in valid_modes:
+        raise ValueError(f"Режим должен быть одним из {valid_modes}")
+
+    list_file = DATA_DIR / "lists" / "ipset-all.txt"
+    backup_file = list_file.with_suffix(".txt.backup")
+    current = ipset_switch_status()
+
+    print(f"Переключение ipset-фильтра: {current} -> {mode}")
+
+    # Целевой режим = loaded
+    if mode == "loaded":
+        # Пытаемся восстановить из backup
+        if backup_file.exists():
+            if list_file.exists():
+                list_file.unlink()
+            backup_file.rename(list_file)
+            print("✅ Режим loaded: восстановлен из резервной копии.")
+            return True
+        else:
+            print("❌ Невозможно переключиться в loaded: нет резервной копии.")
+            return False
+
+    # Целевой режим = none
+    elif mode == "none":
+        # Если текущий loaded, создаём backup (если его нет)
+        if current == "loaded" and not backup_file.exists():
+            list_file.rename(backup_file)
+        # Записываем заглушку
+        list_file.write_text("203.0.113.113/32\n", encoding='utf-8')
+        print("✅ Режим none установлен.")
+        return True
+
+    # Целевой режим = any (пустой файл)
+    elif mode == "any":
+        # Очищаем файл (делаем пустым)
+        if list_file.exists():
+            # Если файл не пустой и не заглушка, и backup ещё нет, можно сохранить? Но по логике any не требует backup.
+            # Просто делаем файл пустым.
+            list_file.write_text("", encoding='utf-8')
+        else:
+            # Создаём пустой
+            list_file.touch()
+        print("✅ Режим any установлен.")
+        return True
+
+def ipset_switch() -> bool:
+    """
+    Циклическое переключение режимов: loaded -> none -> any -> loaded.
+    Соответствует поведению оригинального service.bat.
+    Возвращает True при успехе.
+    """
+    current = ipset_switch_status()
+    if current == "loaded":
+        return set_ipset_mode("none")
+    elif current == "none":
+        return set_ipset_mode("any")
+    elif current == "any":
+        return set_ipset_mode("loaded")
+    else:
+        print(f"Неизвестный текущий режим: {current}")
+        return False
+
+# ==================== Остальные функции ====================
+
 def status() -> subprocess.CompletedProcess:
     return _run_bat(["status"])
 
 def game_switch(mode: str) -> subprocess.CompletedProcess:
     require_admin()
     return _run_bat(["game_switch", mode])
-
-def ipset_switch() -> subprocess.CompletedProcess:
-    require_admin()
-    return _run_bat(["ipset_switch"])
 
 def check_updates_switch() -> subprocess.CompletedProcess:
     require_admin()
@@ -380,6 +468,8 @@ __all__ = [
     'status',
     'game_switch',
     'ipset_switch',
+    'set_ipset_mode',
+    'ipset_switch_status',
     'check_updates_switch',
     'ipset_update',
     'hosts_update',

@@ -56,4 +56,12 @@ def setservc(data):
 def updServc():
     return fn.updServc()
 
+@eel.expose
+def getsets():
+    return fn.getsets()
+
+@eel.expose
+def savesets(sets):
+    fn.savesets(sets)
+
 eel.start('index.html', mode='edge')

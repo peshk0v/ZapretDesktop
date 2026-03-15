@@ -1,4 +1,4 @@
 import os
 import service
 
-print(service.status_zapret())
+print(service.set_ipset_mode("none"))

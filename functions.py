@@ -29,6 +29,22 @@ def setdata(dta):
     with open("data.json", "w") as f:
         json.dump(dta, f)
 
+def applysets():
+    sets = getsets()
+    sv.set_ipset_mode(sets["IPSET"])
+    sv.game_switch(sets["GameFilter"])
+
+def getsets():
+    dta = getdata()
+    return dta["settings"]
+
+def savesets(set):
+    dta = getdata()
+    dta["settings"] = set
+    setdata(dta)
+    applysets()
+    sv.restart()
+
 def setAutostart(enblt):
     dta = getdata()
     dta["service"] = enblt

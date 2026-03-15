@@ -5,6 +5,8 @@ let selectedObName = null;
 let oblist = [];
 let servicesList = [];
 let servicesChanged = false;
+let originalSettings = null;
+let settingsChanged = false;
 
 function switchPage(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -20,6 +22,8 @@ function switchPage(page) {
         updateUI();
     } else if (page === 'services') {
         loadServices();
+    } else if (page === 'settings') {
+        loadSettings();
     }
 }
 
@@ -71,6 +75,68 @@ async function loadBypasses() {
     document.getElementById('save-button-container').style.display = 'none';
 
     renderBypassList();
+}
+
+async function loadSettings() {
+    try {
+        originalSettings = await eel.getsets()();
+        
+        document.querySelectorAll('input[name="ipset"]').forEach(radio => {
+            if (radio.value === originalSettings.IPSET) radio.checked = true;
+        });
+        document.querySelectorAll('input[name="gamefilter"]').forEach(radio => {
+            if (radio.value === originalSettings.GameFilter) radio.checked = true;
+        });
+
+        document.getElementById('settings-save-btn-container').style.display = 'none';
+        settingsChanged = false;
+    } catch (error) {
+        console.error('Ошибка загрузки настроек:', error);
+    }
+}
+
+function checkSettingsChanged() {
+    if (!originalSettings) return false;
+
+    const currentIPSet = document.querySelector('input[name="ipset"]:checked')?.value;
+    const currentGameFilter = document.querySelector('input[name="gamefilter"]:checked')?.value;
+
+    const changed = (currentIPSet !== originalSettings.IPSET) ||
+                    (currentGameFilter !== originalSettings.GameFilter);
+
+    if (changed !== settingsChanged) {
+        settingsChanged = changed;
+        document.getElementById('settings-save-btn-container').style.display = changed ? 'block' : 'none';
+    }
+}
+
+async function saveSettings() {
+    const currentIPSet = document.querySelector('input[name="ipset"]:checked')?.value;
+    const currentGameFilter = document.querySelector('input[name="gamefilter"]:checked')?.value;
+
+    if (!currentIPSet || !currentGameFilter) {
+        console.warn('Не все параметры выбраны');
+        return;
+    }
+
+    const settings = {
+        IPSET: currentIPSet,
+        GameFilter: currentGameFilter
+    };
+
+    const saveBtn = document.getElementById('save-settings-btn');
+    saveBtn.disabled = true;
+
+    try {
+        await eel.savesets(settings)();
+        originalSettings = { ...settings };
+        settingsChanged = false;
+        document.getElementById('settings-save-btn-container').style.display = 'none';
+    } catch (error) {
+        console.error('Ошибка сохранения настроек:', error);
+    } finally {
+        saveBtn.disabled = false;
+    }
 }
 
 function renderBypassList() {
@@ -268,8 +334,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    document.querySelectorAll('#settings-page input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', checkSettingsChanged);
+    });
+
     await updateUI();
 
+    document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
     document.getElementById('save-services-btn').addEventListener('click', saveServices);
     document.getElementById('toggle-btn').addEventListener('click', handleToggle);
     document.getElementById('autostart-checkbox').addEventListener('change', handleAutostart);

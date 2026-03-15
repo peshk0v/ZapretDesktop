@@ -70,11 +70,53 @@
                 </div>
             </div>
             <div id="settings-page" class="page">
-                <div class="page-content">
-                    <h1>Настройки</h1>
-                    <p>Скоро здесь появятся настройки приложения...</p>
+            <div class="page-content">
+                <h1>Настройки</h1>
+
+                <div class="settings-group">
+                    <div class="settings-label">IPSet Filter</div>
+                    <div class="radio-group" id="ipset-group">
+                        <label class="radio-option">
+                            <input type="radio" name="ipset" value="none"> none
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="ipset" value="loaded"> loaded
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="ipset" value="any"> any
+                        </label>
+                    </div>
+                    <div class="settings-description">
+                        Полезно при тестировании, если не работает ресурс, который без zapret работает.
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="settings-label">Game Filter</div>
+                    <div class="radio-group" id="gamefilter-group">
+                        <label class="radio-option">
+                            <input type="radio" name="gamefilter" value="disable"> Disable
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="gamefilter" value="tcp"> TCP
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="gamefilter" value="udp"> UDP
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="gamefilter" value="all"> All
+                        </label>
+                    </div>
+                    <div class="settings-description">
+                        Переключение режима обхода для игр (и других сервисов, использующих UDP и TCP на портах выше 1023).
+                    </div>
+                </div>
+
+                <div class="save-button-container" id="settings-save-btn-container" style="display: none;">
+                    <button id="save-settings-btn" class="action-btn">Сохранить</button>
                 </div>
             </div>
+        </div>
         </main>
     </div>
     <script src="index.js"></script>

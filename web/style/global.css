@@ -568,3 +568,86 @@ input:checked + .slider:before {
     font-weight: 500;
     letter-spacing: 0.5px;
 }
+
+.settings-group {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.settings-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.8);
+    margin-bottom: 15px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: rgba(0, 0, 0, 0.7);
+    transition: color 0.2s;
+}
+
+.radio-option:hover {
+    color: #000;
+}
+
+/* Кастомные радио-кнопки (скрываем стандартные) */
+.radio-option input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(2px);
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.radio-option input[type="radio"]:checked {
+    border-color: #4a3aff;
+    background: rgba(74, 58, 255, 0.3);
+}
+
+.radio-option input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 8px;
+    height: 8px;
+    background: #4a3aff;
+    border-radius: 50%;
+}
+
+.radio-option input[type="radio"]:focus {
+    box-shadow: 0 0 0 3px rgba(74, 58, 255, 0.3);
+}
+
+.settings-description {
+    font-size: 0.9rem;
+    color: rgba(0, 0, 0, 0.6);
+    line-height: 1.4;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
