@@ -151,7 +151,6 @@ def install(strategy_file: str) -> bool:
     if not winws_path.exists():
         raise FileNotFoundError(f"{winws_path} не найден")
 
-    # Правильное формирование командной строки: список из пути и аргументов -> экранирование -> общие кавычки для binPath
     cmd_parts = [str(winws_path)] + args
     full_cmd = subprocess.list2cmdline(cmd_parts)
     binpath_value = f'"{full_cmd}"'
@@ -202,33 +201,100 @@ def install(strategy_file: str) -> bool:
     print("Служба zapret успешно установлена и запущена.")
     return True
 
-def remove() -> subprocess.CompletedProcess:
+def remove() -> bool:
+    """
+    Полностью удаляет службу zapret, останавливает процесс winws.exe.
+    Возвращает True при успешном удалении.
+    """
     require_admin()
-    result = _run_bat(["remove"])
+    SERVICE_NAME = "zapret"
+    print(f"Удаление службы {SERVICE_NAME}...")
+
+    # 1. Останавливаем службу, если она запущена
+    stop_result = subprocess.run(["sc", "stop", SERVICE_NAME], capture_output=True, text=True)
+    if stop_result.returncode == 0:
+        print("  Служба остановлена.")
+    else:
+        # Если служба не найдена или уже остановлена – игнорируем ошибку
+        if "not running" not in stop_result.stderr.lower() and "not exist" not in stop_result.stderr.lower():
+            print(f"  Предупреждение при остановке: {stop_result.stderr}")
+
+    # 2. Даём время на остановку
     time.sleep(2)
 
-    check = subprocess.run(["sc", "query", "zapret"], capture_output=True, text=True)
-    if check.returncode == 0:
-        print("⚠️ Служба zapret всё ещё существует. Пытаемся удалить принудительно...")
-        subprocess.run(["sc", "stop", "zapret"], capture_output=True)
-        subprocess.run(["sc", "delete", "zapret"], capture_output=True)
-        time.sleep(1)
-        check2 = subprocess.run(["sc", "query", "zapret"], capture_output=True, text=True)
-        if check2.returncode != 0:
-            print("✅ Служба zapret успешно удалена.")
-        else:
-            print("❌ Не удалось удалить службу zapret.")
-    else:
+    # 3. Принудительно завершаем процесс winws.exe
+    subprocess.run(["taskkill", "/IM", "winws.exe", "/F"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    # 4. Удаляем службу
+    delete_result = subprocess.run(["sc", "delete", SERVICE_NAME], capture_output=True, text=True)
+    if delete_result.returncode == 0:
         print("✅ Служба zapret успешно удалена.")
-
-    proc_check = subprocess.run(["tasklist", "/FI", "IMAGENAME eq winws.exe"], capture_output=True, text=True)
-    if "winws.exe" in proc_check.stdout:
-        print("⚠️ Процесс winws.exe всё ещё запущен. Завершаем...")
-        subprocess.run(["taskkill", "/IM", "winws.exe", "/F"], capture_output=True)
+        return True
     else:
-        print("✅ Процесс winws.exe завершён.")
+        # Если служба не найдена – считаем успехом
+        if "not exist" in delete_result.stderr.lower():
+            print("✅ Служба zapret не существует (уже удалена).")
+            return True
+        else:
+            print(f"❌ Ошибка при удалении службы: {delete_result.stderr}")
+            # Попробуем удалить через реестр (крайний случай)
+            try:
+                import winreg
+                key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Services", 0, winreg.KEY_ALL_ACCESS)
+                winreg.DeleteKey(key, SERVICE_NAME)
+                winreg.CloseKey(key)
+                print("✅ Служба удалена через реестр.")
+                return True
+            except Exception as e:
+                print(f"❌ Не удалось удалить службу даже через реестр: {e}")
+                return False
 
-    return result
+def restart() -> None:
+    """
+    Перезапускает службу zapret: останавливает и снова запускает.
+    Требует прав администратора.
+    """
+    require_admin()
+    print("Перезапуск службы zapret...")
+    subprocess.run(["sc", "stop", "zapret"], capture_output=True)
+    time.sleep(2)
+    start_result = subprocess.run(["sc", "start", "zapret"], capture_output=True, text=True)
+    if start_result.returncode == 0:
+        print("✅ Служба zapret успешно перезапущена.")
+    else:
+        print(f"❌ Ошибка при перезапуске службы: {start_result.stderr}")
+
+def set_autostart(enabled: bool) -> None:
+    """
+    Включает или отключает автоматический запуск службы при старте Windows.
+    enabled=True  -> тип запуска 'auto' (автоматически)
+    enabled=False -> тип запуска 'demand' (вручную)
+    Требует прав администратора.
+    """
+    require_admin()
+    start_type = "auto" if enabled else "demand"
+    result = subprocess.run(["sc", "config", "zapret", "start=", start_type], capture_output=True, text=True)
+    if result.returncode == 0:
+        print(f"✅ Автозапуск службы {'включён' if enabled else 'отключён'}.")
+    else:
+        print(f"❌ Не удалось изменить автозапуск: {result.stderr}")
+
+def get_autostart_status() -> bool:
+    """
+    Возвращает True, если служба настроена на автоматический запуск (auto),
+    иначе False.
+    """
+    result = subprocess.run(["sc", "qc", "zapret"], capture_output=True, text=True)
+    if result.returncode != 0:
+        return False
+    for line in result.stdout.splitlines():
+        if "START_TYPE" in line:
+            # Пример: "START_TYPE         : 2   AUTO_START"
+            if "AUTO_START" in line:
+                return True
+            else:
+                return False
+    return False
 
 def status() -> subprocess.CompletedProcess:
     return _run_bat(["status"])
@@ -308,6 +374,9 @@ def get_status_dict() -> Dict[str, Any]:
 __all__ = [
     'install',
     'remove',
+    'restart',
+    'set_autostart',
+    'get_autostart_status',
     'status',
     'game_switch',
     'ipset_switch',

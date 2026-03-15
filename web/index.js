@@ -181,7 +181,6 @@ function renderServicesList(services) {
         card.appendChild(arrowSpan);
         card.appendChild(switchLabel);
 
-        // Блок IP (теперь отдельно от карточки)
         const ipsContainer = document.createElement('div');
         ipsContainer.className = 'service-ips';
         if (service.IPS && service.IPS.length > 0) {
@@ -241,6 +240,11 @@ async function saveServices() {
     servicesChanged = false;
     document.getElementById('services-save-button-container').style.display = 'none';
     await loadServices();
+}
+
+async function handleAutostart(e) {
+    const enabled = e.target.checked;
+    await eel.astrt(enabled)();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

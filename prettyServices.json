@@ -78,13 +78,24 @@
     },
     {
         "Name": "TTV`s",
-        "Enabled": false,
+        "Enabled": true,
         "Icon": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn.allcreatortools.com%2Flogo%2Fact_logo_betterttv.webp&f=1&nofb=1&ipt=89d6f5100daae78ab2800d8b8491c296a619f8fa9f3cb6e3a459aaaf63ae1643",
         "IPS": [
             "betterttv.net",
             "7tv.app",
             "7tv.io",
             "localizeapi.com"
+        ]
+    },
+    {
+        "Name": "hgsde",
+        "Enabled": false,
+        "Icon": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Flogospng.org%2Fdownload%2Fsoundcloud%2Flogo-soundcloud-4096.png&f=1&nofb=1&ipt=71f25b173a51e4caa206f757188dda2fdc00ffc047f3c98351a36d1ab71a15c3",
+        "IPS": [
+            "soundcloud.com",
+            "*.soundcloud.com",
+            "sndcdn.com",
+            "*.sndcdn.com"
         ]
     }
 ]

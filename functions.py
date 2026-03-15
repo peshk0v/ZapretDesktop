@@ -38,15 +38,67 @@ def setAutostart(enblt):
     else:
         sv.remove()
 
+def merge_enabled_settings(old_path: str, new_path: str) -> None:
+    if os.path.exists(old_path):
+        with open(old_path, 'r', encoding='utf-8') as f:
+            old_data = json.load(f)
+    else:
+        old_data = []
+
+    with open(new_path, 'r', encoding='utf-8') as f:
+        new_data = json.load(f)
+
+    old_enabled = {}
+    for item in old_data:
+        if isinstance(item, dict) and 'Name' in item and 'Enabled' in item:
+            old_enabled[item['Name']] = item['Enabled']
+
+    for item in new_data:
+        if isinstance(item, dict) and 'Name' in item:
+            name = item['Name']
+            if name in old_enabled:
+                item['Enabled'] = old_enabled[name]
+            else:
+                item['Enabled'] = False
+
+    with open(new_path, 'w', encoding='utf-8') as f:
+        json.dump(new_data, f, indent=4, ensure_ascii=False)
+
 def getservc():
     with open("services.json") as f:
         return json.load(f)
 
+def applyservc():
+    servc = getservc()
+    with open("data\lists\list-general.txt", "w") as lg:
+        new = ""
+        for i in servc:
+            if i["Enabled"]:
+                for a in i["IPS"]:
+                    new = new + a + "\n"
+        lg.write(new)
+
+
 def setservc(dta):
-    print(dta)
+    serv = getservc()
+    for idx, val in enumerate(dta):
+        if idx < len(serv):
+            serv[idx]["Enabled"] = val
+    with open("services.json", "w") as file:
+        json.dump(serv, file, indent=4)
+    applyservc()
+    sv.restart()
+    return True
+    
 
 def updServc():
-    time.sleep(10)
+    os.rename("services.json","oldServices.json")
+    new = requests.get("https://github.com/peshk0v/ZapretDesktop/raw/main/services.json")
+    with open("services.json", "wb") as file:
+        for chunk in new.iter_content(chunk_size=8192):
+            file.write(chunk)
+    merge_enabled_settings('oldServices.json', 'services.json')
+    os.remove("oldServices.json")
     return True
 
 def getCurrent():

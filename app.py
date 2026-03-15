@@ -2,6 +2,7 @@ import requests, io, os, zipfile
 import functions as fn
 import service
 import eel
+import service as sv
 
 config = fn.getConf()
 print(fn.getCurrent())
@@ -41,6 +42,10 @@ def set_obname(name):
 @eel.expose
 def getservc():
     return fn.getservc()
+
+@eel.expose
+def astrt(tf):
+    sv.set_autostart(tf)
 
 @eel.expose
 def setservc(data):
