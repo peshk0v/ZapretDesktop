@@ -250,6 +250,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    document.getElementById('refresh-services-btn').addEventListener('click', async () => {
+        const overlay = document.getElementById('services-overlay');
+        overlay.style.display = 'flex';
+
+        try {
+            await eel.updServc()();
+            await loadServices();
+        } catch (error) {
+            console.error('Ошибка обновления:', error);
+        } finally {
+            overlay.style.display = 'none';
+        }
+    });
+
     await updateUI();
 
     document.getElementById('save-services-btn').addEventListener('click', saveServices);

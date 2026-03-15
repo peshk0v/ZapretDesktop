@@ -10,5 +10,13 @@
     {
         "Name":"Discord", "Enabled":true, "Icon":"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fstatic.vecteezy.com%2Fsystem%2Fresources%2Fpreviews%2F006%2F892%2F625%2Foriginal%2Fdiscord-logo-icon-editorial-free-vector.jpg&f=1&nofb=1&ipt=2efb95b1a48ec6e53fabc233672566fd1bb46a5e473bd01c55b3d0dc7c45ff10",
         "IPS":["dis.gd", "discord-attachments-uploads-prd.storage.googleapis.com","discord.app","discord.co","discord.com","discord.design","discord.dev","discord.dev","discord.gift","discord.gifts","discord.gg","discord.media","discord.new","discord.store","discord.status","discord-activities.com","discordactivities.com","discordapp.com","discordapp.net","discordcdn.com","discordmerch.com","discordpartygames.com","discordsays.com","discordsez.com","discordstatus.com"]
+    },
+    {
+        "Name":"FrankerFaceZ", "Enabled":false, "Icon":"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn.allcreatortools.com%2Flogo%2Fact_logo_frankerfacez.webp&f=1&nofb=1&ipt=e15e5b1dc56643a855d50c2c1131d560ee88103810a117599193c88ef8369676",
+        "IPS":["frankerfacez.com","ffzap.com"]
+    },
+    {
+        "Name":"TTV`s", "Enabled":false, "Icon":"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn.allcreatortools.com%2Flogo%2Fact_logo_betterttv.webp&f=1&nofb=1&ipt=89d6f5100daae78ab2800d8b8491c296a619f8fa9f3cb6e3a459aaaf63ae1643",
+        "IPS":["betterttv.net", "7tv.app", "7tv.io", "localizeapi.com"]
     }
 ]

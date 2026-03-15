@@ -47,4 +47,8 @@ def setservc(data):
     fn.setservc(data)
     return True
 
+@eel.expose
+def updServc():
+    return fn.updServc()
+
 eel.start('index.html', mode='edge')

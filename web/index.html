@@ -34,7 +34,16 @@
             </div>
             <div id="services-page" class="page">
                 <div class="services-container">
-                    <h1>Сервисы</h1>
+                    <div id="services-overlay" class="services-overlay" style="display: none;">
+                        <div class="overlay-content">
+                            <div class="overlay-spinner"></div>
+                            <div class="overlay-text">Обновление списка сервисов...</div>
+                        </div>
+                    </div>
+                    <div class="services-header">
+                        <h1>Сервисы</h1>
+                        <button id="refresh-services-btn" class="refresh-btn" title="Обновить"></button>
+                    </div>
                     <div class="services-list" id="services-list"></div>
                     <div class="save-button-container" id="services-save-button-container" style="display: none;">
                         <button id="save-services-btn" class="action-btn">Сохранить</button>

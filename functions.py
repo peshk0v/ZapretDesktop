@@ -3,7 +3,7 @@ import requests
 import zipfile
 import io
 import ctypes
-import os
+import os, time
 import service as sv
 
 def getConf():
@@ -44,6 +44,10 @@ def getservc():
 
 def setservc(dta):
     print(dta)
+
+def updServc():
+    time.sleep(10)
+    return True
 
 def getCurrent():
     with open("current.zapret", "r") as f:
