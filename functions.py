@@ -52,7 +52,7 @@ def setAutostart(enblt):
     if enblt:
         sv.install(getCurrent())
     else:
-        sv.remove()
+        sv.service_remove()
 
 def merge_enabled_settings(old_path: str, new_path: str) -> None:
     if os.path.exists(old_path):
