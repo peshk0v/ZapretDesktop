@@ -1,1 +1,1 @@
-{"service": true, "settings": {"IPSET": "any", "GameFilter": "all"}}
+{"service": false, "settings": {"IPSET": "loaded", "GameFilter": "all"}}

@@ -161,3 +161,6 @@ def downloadzapret(config):
     with open("/data/service.py", "w") as f:
         with open("newservc.bat", "r") as s:
             f.write(s.read()) 
+
+    applysets()
+    applyservc()
