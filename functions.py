@@ -3,15 +3,14 @@ import requests
 import zipfile
 import io
 import ctypes
-import os, time
-import service as sv
+import os, time, sys
 
 def getConf():
     with open("config.json", "r") as f:
         return json.load(f)
 
 def oblist():
-    lst = os.listdir("data/")
+    lst = os.listdir("data/zapret-latest/")
     lst.remove('bin')
     lst.remove("lists")
     lst.remove('utils')
@@ -86,7 +85,7 @@ def getservc():
 
 def applyservc():
     servc = getservc()
-    with open("data\lists\list-general.txt", "w") as lg:
+    with open("data/zapret-latest/lists/list-general.txt", "w") as lg:
         new = ""
         for i in servc:
             if i["Enabled"]:
@@ -130,8 +129,10 @@ def setObName(nm):
         f.write(nmm)
 
 def downloadzapret(config):
-    os.system("git clone https://github.com/Sergeydigl3/zapret-discord-youtube-linux.git data/")
-    os.system("./data/service.sh download-deps --default")
+    try:
+        os.system("git clone https://github.com/Sergeydigl3/zapret-discord-youtube-linux.git data/")
+    finally:
+        os.system("./data/service.sh download-deps --default")
 
 #   applysets()
-#   applyservc()
+    applyservc()

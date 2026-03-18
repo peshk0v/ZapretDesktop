@@ -1,14 +1,12 @@
 import requests, io, os, zipfile
 import functions as fn
-import service
 import eel
-import service as sv
 
 config = fn.getConf()
 print(fn.getCurrent())
-if not any(os.scandir('data/')):
-    fn.downloadzapret(fn.getConf())
-else: print(f"Zapret Installed")
+# if not any(os.scandir('data/')):
+fn.downloadzapret(fn.getConf())
+# else: print(f"Zapret Installed")
 
 eel.init('web')
 
