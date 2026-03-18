@@ -1,11 +1,12 @@
 import requests, io, os, zipfile
 import functions as fn
 import eel
+import service as sv
 
 config = fn.getConf()
 print(fn.getCurrent())
 # if not any(os.scandir('data/')):
-fn.downloadzapret(fn.getConf())
+#fn.downloadzapret(fn.getConf())
 # else: print(f"Zapret Installed")
 
 eel.init('web')
@@ -20,12 +21,12 @@ def get_status():
 
 @eel.expose
 def start_zapret():
-    fn.setAutostart(True)
+    sv.service_control(5)
     return get_status()
 
 @eel.expose
 def stop_zapret():
-    fn.setAutostart(False)
+    sv.service_control(4)
     return get_status()
 
 @eel.expose
@@ -43,7 +44,10 @@ def getservc():
 
 @eel.expose
 def astrt(tf):
-    sv.set_autostart(tf)
+    if tf:
+        sv.service_control(1)
+    else:
+        sv.service_control(2)
 
 @eel.expose
 def setservc(data):
@@ -62,4 +66,8 @@ def getsets():
 def savesets(sets):
     fn.savesets(sets)
 
-eel.start('index.html', mode='edge')
+@eel.expose
+def get_autostart_status():
+    return sv.service_control(14)
+
+eel.start('index.html', mode='firefox')

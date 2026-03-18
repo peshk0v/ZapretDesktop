@@ -4,17 +4,14 @@ import zipfile
 import io
 import ctypes
 import os, time, sys
+import service as sv
 
 def getConf():
     with open("config.json", "r") as f:
         return json.load(f)
 
 def oblist():
-    lst = os.listdir("data/zapret-latest/")
-    lst.remove('bin')
-    lst.remove("lists")
-    lst.remove('utils')
-    lst.remove('service.bat')
+    lst = sv.service_control(7)
     ret = []
     for i in lst:
         ret.append(i[:-4])
@@ -30,8 +27,9 @@ def setdata(dta):
 
 def applysets():
     sets = getsets()
-    sv.set_ipset_mode(sets["IPSET"])
-    sv.game_switch(sets["GameFilter"])
+    sv.service_control(13, change_names(sets["IPSET"]))
+    sv.service_control(12, change_names(sets["GameFilter"]))
+    
 
 def getsets():
     dta = getdata()
@@ -42,7 +40,20 @@ def savesets(set):
     dta["settings"] = set
     setdata(dta)
     applysets()
-    sv.restart()
+    sv.service_control(6)
+
+def change_names(names):
+    match names:
+        case "loaded":
+            return 2
+        case "any":
+            return 1
+        case "none":
+            return 0
+        case True:
+            return 1
+        case False:
+            return 0
 
 def setAutostart(enblt):
     dta = getdata()
@@ -117,12 +128,12 @@ def updServc():
     return True
 
 def getCurrent():
-    with open("current.zapret", "r") as f:
-        return f.read()
+    return sv.service_control(8)["strategy"]
+
 def getObName():
     return getCurrent()[:-4]
 def zapStat():
-    return getdata()["service"]
+    return sv.service_control(3)
 def setObName(nm):
     nmm = nm + ".bat"
     with open("current.zapret", "w") as f:

@@ -93,25 +93,17 @@
 
                 <div class="settings-group">
                     <div class="settings-label">Game Filter</div>
-                    <div class="radio-group" id="gamefilter-group">
-                        <label class="radio-option">
-                            <input type="radio" name="gamefilter" value="disable"> Disable
+                    <div class="switch-setting">
+                        <label class="switch">
+                            <input type="checkbox" id="gamefilter-switch">
+                            <span class="slider"></span>
                         </label>
-                        <label class="radio-option">
-                            <input type="radio" name="gamefilter" value="tcp"> TCP
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="gamefilter" value="udp"> UDP
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="gamefilter" value="all"> All
-                        </label>
+                        <span class="switch-label">Включить Game Filter</span>
                     </div>
                     <div class="settings-description">
                         Переключение режима обхода для игр (и других сервисов, использующих UDP и TCP на портах выше 1023).
                     </div>
                 </div>
-
                 <div class="save-button-container" id="settings-save-btn-container" style="display: none;">
                     <button id="save-settings-btn" class="action-btn">Сохранить</button>
                 </div>

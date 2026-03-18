@@ -8,7 +8,7 @@ let servicesChanged = false;
 let originalSettings = null;
 let settingsChanged = false;
 
-function switchPage(page) {
+async function switchPage(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
 
@@ -17,13 +17,22 @@ function switchPage(page) {
     currentPage = page;
 
     if (page === 'bypasses') {
-        loadBypasses();
+        await loadBypasses();
     } else if (page === 'home') {
-        updateUI();
+        await updateUI();
     } else if (page === 'services') {
-        loadServices();
+        await loadServices();
     } else if (page === 'settings') {
-        loadSettings();
+        await loadSettings();
+    }
+}
+
+async function loadAutostartStatus() {
+    try {
+        const status = await eel.get_autostart_status()();
+        document.getElementById('autostart-checkbox').checked = status;
+    } catch (error) {
+        console.error('Ошибка загрузки статуса автозапуска:', error);
     }
 }
 
@@ -39,13 +48,15 @@ async function updateUI() {
 
     if (status) {
         toggleBtn.textContent = 'Остановить';
-        toggleBtn.classList.add('stopped');   // красный для "Остановить"
+        toggleBtn.classList.add('stopped');
         statusText.textContent = 'Статус: Работает';
     } else {
         toggleBtn.textContent = 'Активировать';
-        toggleBtn.classList.remove('stopped'); // синий для "Активировать"
+        toggleBtn.classList.remove('stopped');
         statusText.textContent = 'Статус: Остановлен';
     }
+
+    await loadAutostartStatus();
 }
 
 async function handleToggle() {
@@ -80,13 +91,15 @@ async function loadBypasses() {
 async function loadSettings() {
     try {
         originalSettings = await eel.getsets()();
-        
+        console.log('getsets() returned:', originalSettings);
+
         document.querySelectorAll('input[name="ipset"]').forEach(radio => {
-            if (radio.value === originalSettings.IPSET) radio.checked = true;
+            if (radio.value === originalSettings.IPSET) {
+                radio.checked = true;
+            }
         });
-        document.querySelectorAll('input[name="gamefilter"]').forEach(radio => {
-            if (radio.value === originalSettings.GameFilter) radio.checked = true;
-        });
+
+        document.getElementById('gamefilter-switch').checked = originalSettings.GameFilter;
 
         document.getElementById('settings-save-btn-container').style.display = 'none';
         settingsChanged = false;
@@ -96,10 +109,13 @@ async function loadSettings() {
 }
 
 function checkSettingsChanged() {
-    if (!originalSettings) return false;
+    if (!originalSettings) {
+        console.log('checkSettingsChanged: originalSettings ещё не загружены');
+        return false;
+    }
 
     const currentIPSet = document.querySelector('input[name="ipset"]:checked')?.value;
-    const currentGameFilter = document.querySelector('input[name="gamefilter"]:checked')?.value;
+    const currentGameFilter = document.getElementById('gamefilter-switch').checked;
 
     const changed = (currentIPSet !== originalSettings.IPSET) ||
                     (currentGameFilter !== originalSettings.GameFilter);
@@ -112,14 +128,14 @@ function checkSettingsChanged() {
 
 async function saveSettings() {
     const currentIPSet = document.querySelector('input[name="ipset"]:checked')?.value;
-    const currentGameFilter = document.querySelector('input[name="gamefilter"]:checked')?.value;
+    const currentGameFilter = document.getElementById('gamefilter-switch').checked;
 
-    if (!currentIPSet || !currentGameFilter) {
-        console.warn('Не все параметры выбраны');
+    if (!currentIPSet) {
+        console.warn('IPSet Filter не выбран');
         return;
     }
 
-    const settings = {
+    const updatedSettings = {
         IPSET: currentIPSet,
         GameFilter: currentGameFilter
     };
@@ -128,8 +144,8 @@ async function saveSettings() {
     saveBtn.disabled = true;
 
     try {
-        await eel.savesets(settings)();
-        originalSettings = { ...settings };
+        await eel.savesets(updatedSettings)();
+        originalSettings = updatedSettings;
         settingsChanged = false;
         document.getElementById('settings-save-btn-container').style.display = 'none';
     } catch (error) {
@@ -315,8 +331,8 @@ async function handleAutostart(e) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            switchPage(btn.dataset.page);
+        btn.addEventListener('click', async () => {
+            await switchPage(btn.dataset.page);
         });
     });
 
@@ -340,6 +356,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await updateUI();
 
+    document.getElementById('gamefilter-switch').addEventListener('change', checkSettingsChanged);
     document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
     document.getElementById('save-services-btn').addEventListener('click', saveServices);
     document.getElementById('toggle-btn').addEventListener('click', handleToggle);
