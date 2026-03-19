@@ -59,6 +59,54 @@ async function updateUI() {
     await loadAutostartStatus();
 }
 
+function hslToRgb(h, s, l) {
+  h /= 360; s /= 100; l /= 100;
+  let r, g, b;
+  if (s === 0) {
+    r = g = b = l;
+  } else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+  return {
+    r: Math.round(r * 255),
+    g: Math.round(g * 255),
+    b: Math.round(b * 255)
+  };
+}
+
+function randomColorFromHue(hue) {
+  return hslToRgb(hue, 70, 60);
+}
+
+function setRandomGradient() {
+  const hue1 = Math.floor(Math.random() * 360);
+  const hue2 = (hue1 + 30 + Math.floor(Math.random() * 60)) % 360;
+  const color1 = randomColorFromHue(hue1);
+  const color2 = randomColorFromHue(hue2);
+  const angle = Math.floor(Math.random() * 360);
+
+  const root = document.documentElement;
+  root.style.setProperty('--gradient-angle', angle + 'deg');
+  root.style.setProperty('--gradient-start-r', color1.r);
+  root.style.setProperty('--gradient-start-g', color1.g);
+  root.style.setProperty('--gradient-start-b', color1.b);
+  root.style.setProperty('--gradient-end-r', color2.r);
+  root.style.setProperty('--gradient-end-g', color2.g);
+  root.style.setProperty('--gradient-end-b', color2.b);
+}
+
 async function handleToggle() {
     const toggleBtn = document.getElementById('toggle-btn');
     toggleBtn.disabled = true;
@@ -330,36 +378,38 @@ async function handleAutostart(e) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            await switchPage(btn.dataset.page);
-        });
+  setRandomGradient();
+
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await switchPage(btn.dataset.page);
     });
+  });
 
-    document.getElementById('refresh-services-btn').addEventListener('click', async () => {
-        const overlay = document.getElementById('services-overlay');
-        overlay.style.display = 'flex';
+  document.getElementById('refresh-services-btn').addEventListener('click', async () => {
+    const overlay = document.getElementById('services-overlay');
+    overlay.style.display = 'flex';
 
-        try {
-            await eel.updServc()();
-            await loadServices();
-        } catch (error) {
-            console.error('Ошибка обновления:', error);
-        } finally {
-            overlay.style.display = 'none';
-        }
-    });
+    try {
+      await eel.updServc()();
+      await loadServices();
+    } catch (error) {
+      console.error('Ошибка обновления:', error);
+    } finally {
+      overlay.style.display = 'none';
+    }
+  });
 
-    document.querySelectorAll('#settings-page input[type="radio"]').forEach(radio => {
-        radio.addEventListener('change', checkSettingsChanged);
-    });
+  document.querySelectorAll('#settings-page input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', checkSettingsChanged);
+  });
 
-    await updateUI();
+  await updateUI();
 
-    document.getElementById('gamefilter-switch').addEventListener('change', checkSettingsChanged);
-    document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
-    document.getElementById('save-services-btn').addEventListener('click', saveServices);
-    document.getElementById('toggle-btn').addEventListener('click', handleToggle);
-    document.getElementById('autostart-checkbox').addEventListener('change', handleAutostart);
-    document.getElementById('save-bypass-btn').addEventListener('click', saveBypass);
+  document.getElementById('gamefilter-switch').addEventListener('change', checkSettingsChanged);
+  document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+  document.getElementById('save-services-btn').addEventListener('click', saveServices);
+  document.getElementById('toggle-btn').addEventListener('click', handleToggle);
+  document.getElementById('autostart-checkbox').addEventListener('change', handleAutostart);
+  document.getElementById('save-bypass-btn').addEventListener('click', saveBypass);
 });
