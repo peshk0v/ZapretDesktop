@@ -1,6 +1,7 @@
 # Zapret Desktop Linux
 
-![APP](https://github.com/peshk0v/ZapretDesktop/blob/main/web/style/content/image.png?raw=true)
+<img width="1013" height="718" alt="APP" src="https://github.com/user-attachments/assets/2dbb8b45-079b-4976-92ee-2d8bf818a2c0" />
+
 <!-- ![Zapret Logo](https://example.com/logo.png)  Замените на реальный URL изображения, если нужно -->
 
 ## Описание приложения
