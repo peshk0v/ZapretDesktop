@@ -2,6 +2,7 @@ import requests, io, os, zipfile
 import functions as fn
 import eel
 import service as sv
+import time
 
 config = fn.getConf()
 print(fn.getCurrent())
@@ -70,4 +71,4 @@ def savesets(sets):
 def get_autostart_status():
     return sv.service_control(14)
 
-eel.start('index.html', mode='firefox')
+eel.start('index.html', mode="firefox")

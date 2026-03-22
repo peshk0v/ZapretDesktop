@@ -1,1 +1,1 @@
-{"service": false, "settings": {"IPSET": "loaded", "GameFilter": true}}
+{"service": false, "settings": {"IPSET": "loaded", "GameFilter": true}, "baseExclude":"pusher.com\nlive-video.net\nmail.ru\ncitilink.ru\nyandex.com\nnvidia.com\ndonationalerts.com\nvk.com\nyandex.kz\nmts.ru\nmultimc.org\nya.ru\ndns-shop.ru\nhabr.com\n3dnews.ru\nsberbank.ru\nozon.ru\nwildberries.ru\nmicrosoft.com\nmicrosoftonline.com\nlive.com\nminecraft.net\nxboxlive.com\nakamaitechnologies.com\nmsi.com\n2ip.ru\nyandex.ru\nboosty.to\ntanki.su\nlesta.ru\nkorabli.su\ntanksblitz.ru\nreg.ru"}

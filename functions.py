@@ -95,14 +95,20 @@ def getservc():
         return json.load(f)
 
 def applyservc():
+    cfg = getdata()
     servc = getservc()
     with open("data/zapret-latest/lists/list-general.txt", "w") as lg:
-        new = ""
-        for i in servc:
-            if i["Enabled"]:
-                for a in i["IPS"]:
-                    new = new + a + "\n"
-        lg.write(new)
+        with open("data/zapret-latest/lists/list-exclude.txt", "w") as ex:
+            newlg = ""
+            newex = cfg["baseExclude"]
+            for i in servc:
+                if i["Enabled"]:
+                    for a in i["IPS"]:
+                        newlg = newlg + a + "\n"
+                    for b in i["Exclude"]:
+                        newex = newex + "\n" + b
+            ex.write(newex)
+            lg.write(newlg)
 
 
 def setservc(dta):
@@ -113,7 +119,7 @@ def setservc(dta):
     with open("services.json", "w") as file:
         json.dump(serv, file, indent=4)
     applyservc()
-    sv.restart()
+    # sv.service_control(6)
     return True
     
 
