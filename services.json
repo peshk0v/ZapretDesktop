@@ -132,5 +132,18 @@
             "ttvnw.net",
             "twitch.tv"
         ]
+    },
+    {
+        "Name": "Microsoft",
+        "Enabled": false,
+        "Icon": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.freepnglogos.com%2Fuploads%2Fimage-microsoft-logo--5.png&f=1&nofb=1&ipt=1bbe334c8b4991c9ee622608981dd540cef668e5b16e7ab1a27cb0ca95b4eee3",
+        "IPS": [
+            "microsoft.com",
+            "microsoftonline.com",
+            "live.com",
+            "minecraft.net",
+            "xboxlive.com"
+        ],
+        "Exclude": []
     }
 ]
