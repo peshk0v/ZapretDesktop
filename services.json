@@ -8,7 +8,8 @@
             "*.soundcloud.com",
             "sndcdn.com",
             "*.sndcdn.com"
-        ]
+        ],
+        "Exclude": []
     },
     {
         "Name": "CloudFlare",
@@ -33,7 +34,8 @@
             "cloudflarestream.com",
             "cloudflarestream.com",
             "cloudflaretest.com"
-        ]
+        ],
+        "Exclude": []
     },
     {
         "Name": "Discord",
@@ -65,7 +67,8 @@
             "discordsays.com",
             "discordsez.com",
             "discordstatus.com"
-        ]
+        ],
+        "Exclude": []
     },
     {
         "Name": "FrankerFaceZ",
@@ -74,7 +77,8 @@
         "IPS": [
             "frankerfacez.com",
             "ffzap.com"
-        ]
+        ],
+        "Exclude": []
     },
     {
         "Name": "TTV`s",
@@ -85,7 +89,8 @@
             "7tv.app",
             "7tv.io",
             "localizeapi.com"
-        ]
+        ],
+        "Exclude": []
     },
     {
         "Name": "Roblox | SWITCH IPSET TO ANY!",
@@ -112,6 +117,20 @@
             "games.roblox.com",
             "tr.rbxcdn.com",
             "thumbnails.roblox.com"
+        ],
+        "Exclude": []
+    },
+    {
+        "Name": "Twitch",
+        "Enabled": false,
+        "Icon": "https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fpngimg.com%2Fuploads%2Ftwitch%2Ftwitch_PNG28.png&f=1&nofb=1&ipt=b9dc49b2913f59e84931ca0fe2a076f255a803d8508d767a69307e3bbe112823",
+        "IPS": [
+            "gql.twitch.tv",
+            "assets.twitch.tv"
+        ],
+        "Exclude": [
+            "ttvnw.net",
+            "twitch.tv"
         ]
     }
 ]
