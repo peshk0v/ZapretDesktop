@@ -3,9 +3,47 @@
 import eel
 import service as sv
 import functions as fn
+import threading, subprocess
+import os
 
 eel.init(f"{sv.BASE_DIR}/web")
+sudo_password = None
+password_event = threading.Event()
+PASSWORD_FILE = sv.PASSWORD_FILE
 
+# ----------------------------------------------------------------------
+# Password handling
+# ----------------------------------------------------------------------
+def _get_saved_password():
+    """Внутренняя функция для чтения пароля из файла."""
+    try:
+        if PASSWORD_FILE.exists():
+            with open(PASSWORD_FILE, 'r') as f:
+                return f.read().strip()
+    except:
+        pass
+    return None
+
+def _save_sudo_password(password):
+    """Внутренняя функция для сохранения пароля в файл."""
+    try:
+        with open(PASSWORD_FILE, 'w') as f:
+            f.write(password)
+        os.chmod(PASSWORD_FILE, 0o600)
+        return True
+    except:
+        return False
+
+def get_sudo_password_callback():
+    global sudo_password
+    if sudo_password is None:
+        saved = _get_saved_password()
+        if saved:
+            sudo_password = saved
+            sv.set_sudo_password(saved)
+    return sudo_password
+
+sv.set_password_callback(get_sudo_password_callback)
 
 # ----------------------------------------------------------------------
 # Functions
@@ -14,39 +52,32 @@ eel.init(f"{sv.BASE_DIR}/web")
 def get_obname() -> str:
     return fn.getObName()
 
-
 @eel.expose
 def get_status() -> bool:
     return fn.zapStat()
 
-
 @eel.expose
 def start_zapret() -> bool:
-    sv.service_control(5)
+    sv.service_control(1)
     return get_status()
-
 
 @eel.expose
 def stop_zapret() -> bool:
     sv.service_control(4)
     return get_status()
 
-
 @eel.expose
 def get_oblist() -> list:
     return fn.oblist()
-
 
 @eel.expose
 def set_obname(name: str) -> bool:
     fn.setObName(name)
     return True
 
-
 @eel.expose
 def getservc() -> dict:
     return fn.getservc()
-
 
 @eel.expose
 def astrt(tf: bool) -> None:
@@ -55,32 +86,63 @@ def astrt(tf: bool) -> None:
     else:
         sv.service_control(2)
 
-
 @eel.expose
 def setservc(data: list) -> bool:
     fn.setservc(data)
     return True
 
-
 @eel.expose
 def updServc() -> bool:
     return fn.updServc()
-
 
 @eel.expose
 def getsets() -> dict:
     return fn.getsets()
 
-
 @eel.expose
 def savesets(sets: dict) -> None:
     fn.savesets(sets)
-
 
 @eel.expose
 def get_autostart_status() -> bool:
     return sv.service_control(14)
 
+@eel.expose
+def get_saved_password():
+    """EEL-функция для получения пароля из файла."""
+    return _get_saved_password()
+
+@eel.expose
+def save_sudo_password(password):
+    """EEL-функция для сохранения пароля в файл."""
+    return _save_sudo_password(password)
+
+@eel.expose
+def set_sudo_password(password):
+    """EEL-функция для установки пароля в памяти и разблокировки ожидания."""
+    global sudo_password
+    sudo_password = password
+    sv.set_sudo_password(password)
+    password_event.set()
+    return True
+
+@eel.expose
+def test_sudo():
+    """Проверяет, работает ли сохранённый пароль sudo."""
+    password = get_sudo_password_callback()
+    if password:
+        try:
+            result = subprocess.run(
+                ['sudo', '-S', 'echo', 'test'],
+                input=password + '\n',
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            return result.returncode == 0 and result.stdout.strip() == 'test'
+        except:
+            pass
+    return False
 
 # ----------------------------------------------------------------------
 # Start GUI

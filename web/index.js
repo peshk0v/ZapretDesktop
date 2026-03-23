@@ -7,6 +7,7 @@ let servicesList = [];
 let servicesChanged = false;
 let originalSettings = null;
 let settingsChanged = false;
+let sudoPassword = null;
 
 async function switchPage(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -363,6 +364,73 @@ function toggleIPList(wrapper) {
     }
 }
 
+async function loadSavedPassword() {
+    try {
+        const saved = await eel.get_saved_password()();
+        if (saved) {
+            sudoPassword = saved;
+            await eel.set_sudo_password(saved);
+        }
+    } catch (e) { console.error('Ошибка загрузки пароля:', e); }
+}
+
+async function checkPassword() {
+    const saved = await eel.get_saved_password()();
+    if (!saved) {
+        await show_password_modal();
+    }
+}
+
+eel.expose(show_password_modal);
+async function show_password_modal() {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('password-modal');
+        const input = document.getElementById('sudo-password-input');
+        const submitBtn = document.getElementById('sudo-password-submit');
+        const errorDiv = document.getElementById('sudo-password-error') || (() => {
+            const div = document.createElement('div');
+            div.id = 'sudo-password-error';
+            div.style.color = '#ff3b30';
+            div.style.marginTop = '10px';
+            div.style.fontSize = '0.9rem';
+            modal.querySelector('.password-modal-content').appendChild(div);
+            return div;
+        })();
+
+        modal.classList.add('visible');
+        input.value = '';
+        input.focus();
+        errorDiv.textContent = '';
+
+        const onSubmit = async () => {
+            const password = input.value.trim();
+            if (!password) return;
+
+            await eel.save_sudo_password(password)();
+            await eel.set_sudo_password(password);
+
+            const ok = await eel.test_sudo()();
+            if (ok) {
+                modal.classList.remove('visible');
+                resolve(password);
+            } else {
+                errorDiv.textContent = 'Неверный пароль sudo. Попробуйте ещё раз.';
+                input.value = '';
+                input.focus();
+                await eel.save_sudo_password('');
+            }
+        };
+
+        const onKeyPress = (e) => {
+            if (e.key === 'Enter') onSubmit();
+        };
+
+        input.addEventListener('keypress', onKeyPress);
+        submitBtn.addEventListener('click', onSubmit);
+    });
+}
+window.show_password_modal = show_password_modal;
+
 async function saveServices() {
     const checkboxes = document.querySelectorAll('#services-list .service-card input[type="checkbox"]');
     const enabledStates = Array.from(checkboxes).map(cb => cb.checked);
@@ -405,6 +473,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   await updateUI();
+  await checkPassword();
 
   document.getElementById('gamefilter-switch').addEventListener('change', checkSettingsChanged);
   document.getElementById('save-settings-btn').addEventListener('click', saveSettings);

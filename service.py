@@ -5,8 +5,9 @@ import sys
 import glob
 import shutil
 import urllib.request
-import subprocess
+import subprocess, getpass
 from pathlib import Path
+from typing import Optional, Union
 
 # ----------------------------------------------------------------------
 # Constants
@@ -18,7 +19,9 @@ BIN_DIR = ZAPRET_DIR / "bin"
 LISTS_DIR = ZAPRET_DIR / "lists"
 UTILS_DIR = ZAPRET_DIR / "utils"
 SERVICE_PATH = DATA_DIR / "service.sh"
-
+SUDO_PASSWORD = None
+PASSWORD_CALLBACK = None
+PASSWORD_FILE = Path(__file__).parent / ".sudo_pass"
 
 # ----------------------------------------------------------------------
 # Utilites
@@ -33,26 +36,58 @@ def log(text: str, mode: int) -> None:
         case 2:
             print(f"[ERROR] ~ {text}\n[PLEASE CREATE ISSULE ON GITHUB]")
 
+def set_sudo_password(password):
+    global SUDO_PASSWORD
+    SUDO_PASSWORD = password
 
-def run_cmd(cmd: list) -> str | bool:
+def set_password_callback(callback):
+    global PASSWORD_CALLBACK
+    PASSWORD_CALLBACK = callback
+
+def get_sudo_password():
+    global SUDO_PASSWORD
+    if SUDO_PASSWORD is None and PASSWORD_CALLBACK is not None:
+        SUDO_PASSWORD = PASSWORD_CALLBACK()
+    return SUDO_PASSWORD
+
+def run_cmd(cmd, input_data=None):
     """
-    Выполняет системную команду и возвращает stdout.
-    В случае ошибки возвращает False.
+    Выполняет команду и возвращает stdout (строка) при успехе, иначе False.
+    Если передан input_data, он подаётся на stdin команды.
     """
     try:
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-        log(f"RUNCMD {cmd}", 0)
-        return result.stdout
-    except subprocess.CalledProcessError as e:
-        log(f"RUNCMD {e.stderr}", 2)
+        result = subprocess.run(
+            cmd,
+            input=input_data,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False
+        )
+        if result.returncode == 0:
+            return result.stdout
+        else:
+            log(f"Command failed: {' '.join(cmd)} - {result.stderr.strip()}", 2)
+            return False
+    except Exception as e:
+        log(f"Exception running command: {e}", 2)
         return False
 
+def run_cmd_sudo(cmd, input_data=None):
+    password = get_sudo_password()
+    if password is None:
+        log("Sudo password not available, trying without sudo", 1)
+        return run_cmd(cmd, input_data=input_data)
+    full_cmd = ['sudo', '-S'] + cmd
+    input_str = password + '\n'
+    if input_data:
+        input_str += input_data
+    return run_cmd(full_cmd, input_data=input_str)
 
 def run_service_cmd(args: list) -> str | bool:
-    """Выполняет команду service.sh с переданными аргументами."""
     cmd = [str(SERVICE_PATH)] + args
     log(f"Service cmd run. Args: {args}", 0)
-    return run_cmd(cmd)
+    return run_cmd_sudo(cmd)
 
 
 def write_file(path: Path, content: str) -> None:
@@ -298,47 +333,49 @@ def service_control(comd: int, args=None):
             return True
 
         case 1:
-            run_service_cmd(["service", "install"])
+            run_cmd_sudo([str(SERVICE_PATH), "service", "install"])
             log("ZAPRET INSTALLED WITH SERVICE AND RUN", 0)
             return True
 
         case 2:
-            run_service_cmd(["service", "remove"])
+            run_cmd_sudo([str(SERVICE_PATH), "service", "remove"])
             log("ZAPRET REMOVED WITH SERVICE", 0)
 
-        case 3:
-            return is_service_running()
-
         case 4:
-            run_service_cmd(["service", "stop"])
+            run_cmd_sudo([str(SERVICE_PATH), "service", "stop"])
+            return True
 
         case 5:
-            run_service_cmd(["service", "start"])
+            run_cmd_sudo([str(SERVICE_PATH), "service", "start"])
+            return True
 
         case 6:
-            run_service_cmd(["service", "restart"])
+            run_cmd_sudo([str(SERVICE_PATH), "service", "restart"])
+            return True
 
         case 7:
             cmd = run_service_cmd(["strategy", "list"])
+            if not cmd:
+                return []
             listc = cmd.split("\n")
-            listc.remove('Доступные стратегии:')
-            listc.remove('')
-            listc.remove('')
+            listc = [line for line in listc if line.strip() and 'Доступные стратегии:' not in line]
             return listc
 
         case 8:
             conf = run_service_cmd(["config", "show"])
+            if not conf:
+                return {"interface": "", "gamefilter": "", "strategy": ""}
             clines = conf.split("\n")
             celements = []
-            for i in clines:
-                if clines.index(i) >= 2:
-                    celements.append(i.split("="))
-            log("Get config file on json", 0)
-            return {
-                celements[0][0]: celements[0][1],
-                celements[1][0]: celements[1][1],
-                celements[2][0]: celements[2][1]
-            }
+            for line in clines:
+                if '=' in line and not line.startswith('#'):
+                    parts = line.split('=', 1)
+                    if len(parts) == 2:
+                        celements.append((parts[0].strip(), parts[1].strip()))
+            result = {}
+            for key, val in celements:
+                result[key] = val
+            return result
 
         case 9:
             if args == "none":

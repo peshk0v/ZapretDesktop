@@ -19,6 +19,13 @@
             </nav>
         </aside>
         <main class="content">
+            <div id="password-modal" class="password-modal">
+                <div class="password-modal-content">
+                    <h3>Требуется пароль sudo</h3>
+                    <input type="password" id="sudo-password-input" placeholder="Введите пароль sudo">
+                    <button id="sudo-password-submit">Сохранить</button>
+                </div>
+            </div>
             <div id="home-page" class="page active">
                 <div class="page-content">
                     <h1>Главная</h1>
@@ -30,13 +37,13 @@
                         <button id="toggle-btn" class="action-btn">Загрузка...</button>
                         <div id="status-text" class="status-text"></div>
                     </div>
-                    <div class="autostart-area">
+                    <!-- <div class="autostart-area">
                         <label class="switch">
                             <input type="checkbox" id="autostart-checkbox">
                             <span class="slider"></span>
                         </label>
                         <span>Автозапуск при старте системы</span>
-                    </div>
+                    </div> -->
                 </div>
             </div>
             <div id="services-page" class="page">
