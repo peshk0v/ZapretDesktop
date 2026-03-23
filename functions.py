@@ -7,7 +7,7 @@ import os, time, sys
 import service as sv
 
 def getConf():
-    with open("config.json", "r") as f:
+    with open(f"{sv.BASE_DIR}/config.json", "r") as f:
         return json.load(f)
 
 def oblist():
@@ -18,11 +18,11 @@ def oblist():
     return ret
 
 def getdata():
-    with open("data.json", "r") as f:
+    with open(f"{sv.BASE_DIR}/data.json", "r") as f:
         return json.load(f)
 
 def setdata(dta):
-    with open("data.json", "w") as f:
+    with open(f"{sv.BASE_DIR}/data.json", "w") as f:
         json.dump(dta, f)
 
 def applysets():
@@ -55,14 +55,25 @@ def change_names(names):
         case False:
             return 0
 
-def setAutostart(enblt):
-    dta = getdata()
-    dta["service"] = enblt
-    setdata(dta)
-    if enblt:
-        sv.install(getCurrent())
+# def setAutostart(enblt):
+#     dta = getdata()
+#     dta["service"] = enblt
+#     setdata(dta)
+#     if enblt:
+#         sv.install(getCurrent())
+#     else:
+#         sv.service_remove()
+
+def desktop(tf):
+    if tf:
+        with open("ZAPRET.desktop", "w") as z:
+            fl = f"[Desktop Entry]\nEncoding=UTF-8\nVersion=0.1\nType=Application\nTerminal=false\nExec={sv.BASE_DIR}/venv/bin/python3 {sv.BASE_DIR}/app.py\nName=ZAPRET\nIcon={sv.BASE_DIR}/icon.png"
+            z.write(fl)
+        os.system("mv ZAPRET.desktop ~/.local/share/applications/ZAPRET.desktop")
+        os.system("update-desktop-database ~/.local/share/applications")
     else:
-        sv.service_remove()
+        os.system("rm ~/.local/share/applications/ZAPRET.desktop")
+        os.system("update-desktop-database ~/.local/share/applications")
 
 def merge_enabled_settings(old_path: str, new_path: str) -> None:
     if os.path.exists(old_path):
@@ -91,14 +102,14 @@ def merge_enabled_settings(old_path: str, new_path: str) -> None:
         json.dump(new_data, f, indent=4, ensure_ascii=False)
 
 def getservc():
-    with open("services.json") as f:
+    with open(f"{sv.BASE_DIR}/services.json") as f:
         return json.load(f)
 
 def applyservc():
     cfg = getdata()
     servc = getservc()
-    with open("data/zapret-latest/lists/list-general.txt", "w") as lg:
-        with open("data/zapret-latest/lists/list-exclude.txt", "w") as ex:
+    with open(f"{sv.BASE_DIR}/data/zapret-latest/lists/list-general.txt", "w") as lg:
+        with open(f"{sv.BASE_DIR}/data/zapret-latest/lists/list-exclude.txt", "w") as ex:
             newlg = ""
             newex = cfg["baseExclude"]
             for i in servc:
@@ -116,7 +127,7 @@ def setservc(dta):
     for idx, val in enumerate(dta):
         if idx < len(serv):
             serv[idx]["Enabled"] = val
-    with open("services.json", "w") as file:
+    with open(f"{sv.BASE_DIR}/services.json", "w") as file:
         json.dump(serv, file, indent=4)
     applyservc()
     # sv.service_control(6)
@@ -124,13 +135,13 @@ def setservc(dta):
     
 
 def updServc():
-    os.rename("services.json","oldServices.json")
+    os.rename(f"{sv.BASE_DIR}/services.json",f"{sv.BASE_DIR}/oldServices.json")
     new = requests.get("https://github.com/peshk0v/ZapretDesktop/raw/main/services.json")
-    with open("services.json", "wb") as file:
+    with open(f"{sv.BASE_DIR}/services.json", "wb") as file:
         for chunk in new.iter_content(chunk_size=8192):
             file.write(chunk)
-    merge_enabled_settings('oldServices.json', 'services.json')
-    os.remove("oldServices.json")
+    merge_enabled_settings(f"{sv.BASE_DIR}/oldServices.json", f"{sv.BASE_DIR}/services.json")
+    os.remove(f"{sv.BASE_DIR}/oldServices.json")
     return True
 
 def getCurrent():
@@ -142,14 +153,15 @@ def zapStat():
     return sv.service_control(3)
 def setObName(nm):
     nmm = nm + ".bat"
-    with open("current.zapret", "w") as f:
-        f.write(nmm)
+    se = getConf()
+    se["strategy"] = nmm
+    sv.service_control(9, se)
 
 def downloadzapret(config):
     try:
         os.system("git clone https://github.com/Sergeydigl3/zapret-discord-youtube-linux.git data/")
     finally:
-        os.system("./data/service.sh download-deps --default")
+        os.system(f"{sv.BASE_DIR}/data/service.sh download-deps --default")
 
 #   applysets()
     applyservc()

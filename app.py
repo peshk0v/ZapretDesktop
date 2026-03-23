@@ -10,7 +10,7 @@ print(fn.getCurrent())
 #fn.downloadzapret(fn.getConf())
 # else: print(f"Zapret Installed")
 
-eel.init('web')
+eel.init(f"{sv.BASE_DIR}/web")
 
 @eel.expose
 def get_obname():
