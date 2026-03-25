@@ -1,6 +1,9 @@
-# Zapret Desktop Linux
+# Zapret Desktop Linux (BETA 0.8)!
 
-<img width="1013" height="718" alt="APP" src="https://github.com/user-attachments/assets/2dbb8b45-079b-4976-92ee-2d8bf818a2c0" />
+<img width="1095" height="681" alt="изображение" src="https://github.com/user-attachments/assets/5c75af41-780f-448a-8855-d9b80d5607d2" />
+<img width="1095" height="681" alt="изображение" src="https://github.com/user-attachments/assets/d2706733-a837-44cc-a656-d798d6ebda13" />
+<img width="1299" height="886" alt="изображение" src="https://github.com/user-attachments/assets/47a1f947-935f-4399-ab2d-7ca017706c4d" />
+
 
 <!-- ![Zapret Logo](https://example.com/logo.png)  Замените на реальный URL изображения, если нужно -->
 
