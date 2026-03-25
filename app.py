@@ -96,6 +96,10 @@ def updServc() -> bool:
     return fn.updServc()
 
 @eel.expose
+def update_zapret() -> None:
+    fn.update_zapret()
+
+@eel.expose
 def getsets() -> dict:
     return fn.getsets()
 
@@ -143,6 +147,19 @@ def test_sudo():
         except:
             pass
     return False
+
+@eel.expose
+def get_theme() -> dict:
+    return fn.get_theme()
+
+@eel.expose
+def save_theme(theme: dict) -> None:
+    fn.save_theme(theme)
+
+@eel.expose
+def add_log(text: str, mode: int):
+    """Мост для передачи логов из Python в JavaScript."""
+    pass
 
 # ----------------------------------------------------------------------
 # Start GUI

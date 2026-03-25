@@ -59,7 +59,7 @@ def getObName() -> str:
 def setObName(nm: str) -> None:
     """Устанавливает стратегию по имени (добавляет .bat и сохраняет в конфиг)."""
     nmm = nm + ".bat"
-    se = getConf()
+    se = sv.service_control(8)
     se["strategy"] = nmm
     sv.service_control(9, se)
 
@@ -221,3 +221,46 @@ def downloadzapret(config: dict) -> None:
     finally:
         os.system(f"{sv.BASE_DIR}/data/service.sh download-deps --default")
     applyservc()
+
+
+def update_zapret() -> None:
+    """Обновляет zapret: сохраняет conf.env, удаляет data/, скачивает заново, восстанавливает conf.env."""
+    conf_env_path = f"{sv.BASE_DIR}/data/conf.env"
+    
+    conf_env_content = None
+    if os.path.exists(conf_env_path):
+        with open(conf_env_path, 'r') as f:
+            conf_env_content = f.read()
+    
+    if os.path.exists(sv.DATA_DIR):
+        import shutil
+        shutil.rmtree(sv.DATA_DIR)
+    
+    os.system(f"git clone https://github.com/Sergeydigl3/zapret-discord-youtube-linux.git {sv.DATA_DIR}/")
+    os.system(f"{sv.BASE_DIR}/data/service.sh download-deps --default")
+    
+    if conf_env_content:
+        with open(conf_env_path, 'w') as f:
+            f.write(conf_env_content)
+    
+    applysets()
+    applyservc()
+    sv.service_control(6)
+
+
+def get_theme() -> dict:
+    """Возвращает настройки темы из data.json."""
+    dta = getdata()
+    return dta.get("theme", {
+        "angle": 135,
+        "start": {"r": 102, "g": 126, "b": 234},
+        "end": {"r": 118, "g": 75, "b": 162},
+        "preset": None
+    })
+
+
+def save_theme(theme: dict) -> None:
+    """Сохраняет настройки темы в data.json."""
+    dta = getdata()
+    dta["theme"] = theme
+    setdata(dta)

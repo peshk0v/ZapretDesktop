@@ -8,6 +8,12 @@
     <script type="text/javascript" src="/eel.js"></script>
 </head>
 <body>
+    <div id="zapret-overlay" class="services-overlay" style="display: none;">
+        <div class="overlay-content">
+            <div class="overlay-spinner"></div>
+            <div class="overlay-text" id="zapret-overlay-text">Подождите...</div>
+        </div>
+    </div>
     <div class="app">
         <aside class="sidebar">
             <div class="sidebar-header">Меню</div>
@@ -37,32 +43,24 @@
                         <button id="toggle-btn" class="action-btn">Загрузка...</button>
                         <div id="status-text" class="status-text"></div>
                     </div>
-                    <!-- <div class="autostart-area">
-                        <label class="switch">
-                            <input type="checkbox" id="autostart-checkbox">
-                            <span class="slider"></span>
-                        </label>
-                        <span>Автозапуск при старте системы</span>
-                    </div> -->
+                    <div id="logs-container">
+                        <div class="logs-header">
+                            <span>Логи</span>
+                            <button id="clear-logs-btn">Очистить</button>
+                        </div>
+                        <div id="logs-list"></div>
+                    </div>
                 </div>
             </div>
             <div id="services-page" class="page">
                 <div class="services-container">
-                    <div id="services-overlay" class="services-overlay" style="display: none;">
-                        <div class="overlay-content">
-                            <div class="overlay-spinner"></div>
-                            <div class="overlay-text">Обновление списка сервисов...</div>
-                        </div>
-                    </div>
                     <div class="services-header">
                         <h1>Сервисы</h1>
                         <button id="refresh-services-btn" class="refresh-btn" title="Обновить"></button>
                     </div>
                     <div class="services-list" id="services-list"></div>
-                    <div class="save-button-container" id="services-save-button-container" style="display: none;">
-                        <button id="save-services-btn" class="action-btn">Сохранить</button>
-                    </div>
                 </div>
+                <button id="save-services-btn" class="action-btn">Сохранить</button>
             </div>
             <div id="bypasses-page" class="page">
                 <div class="bypasses-container">
@@ -80,37 +78,81 @@
             <div class="page-content">
                 <h1>Настройки</h1>
 
-                <div class="settings-group">
-                    <div class="settings-label">IPSet Filter</div>
-                    <div class="radio-group" id="ipset-group">
-                        <label class="radio-option">
-                            <input type="radio" name="ipset" value="none"> none
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="ipset" value="loaded"> loaded
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="ipset" value="any"> any
-                        </label>
+                <div class="settings-tabs">
+                    <button class="settings-tab active" data-tab="zapret">Zapret</button>
+                    <button class="settings-tab" data-tab="desktop">Desktop</button>
+                </div>
+
+                <div class="settings-tab-content active" id="zapret-tab">
+                    <div class="settings-group">
+                        <div class="settings-label">IPSet Filter</div>
+                        <div class="radio-group" id="ipset-group">
+                            <label class="radio-option">
+                                <input type="radio" name="ipset" value="none"> none
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="ipset" value="loaded"> loaded
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="ipset" value="any"> any
+                            </label>
+                        </div>
+                        <div class="settings-description">
+                            Полезно при тестировании, если не работает ресурс, который без zapret работает.
+                        </div>
                     </div>
-                    <div class="settings-description">
-                        Полезно при тестировании, если не работает ресурс, который без zapret работает.
+
+                    <div class="settings-group">
+                        <div class="settings-label">Game Filter</div>
+                        <div class="switch-setting">
+                            <label class="switch">
+                                <input type="checkbox" id="gamefilter-switch">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="switch-label">Включить Game Filter</span>
+                        </div>
+                        <div class="settings-description">
+                            Переключение режима обхода для игр (и других сервисов, использующих UDP и TCP на портах выше 1023).
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-label">Автообновление</div>
+                        <div class="switch-setting">
+                            <label class="switch">
+                                <input type="checkbox" id="auto-update-services-switch">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="switch-label">Автообновление списка сервисов</span>
+                        </div>
+                        <div class="switch-setting">
+                            <label class="switch">
+                                <input type="checkbox" id="auto-update-zapret-switch">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="switch-label">Автообновление zapret</span>
+                        </div>
+                        <div class="settings-warning">
+                            ⚠ Не рекомендуется включать. Это может повлечь ошибки в работе.
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-label">Обновление</div>
+                        <button id="update-zapret-btn" class="action-btn">Обновить zapret</button>
                     </div>
                 </div>
 
-                <div class="settings-group">
-                    <div class="settings-label">Game Filter</div>
-                    <div class="switch-setting">
-                        <label class="switch">
-                            <input type="checkbox" id="gamefilter-switch">
-                            <span class="slider"></span>
-                        </label>
-                        <span class="switch-label">Включить Game Filter</span>
-                    </div>
-                    <div class="settings-description">
-                        Переключение режима обхода для игр (и других сервисов, использующих UDP и TCP на портах выше 1023).
+                <div class="settings-tab-content" id="desktop-tab">
+                    <div class="settings-group">
+                        <div class="settings-label">Градиент фона</div>
+                        <div class="preset-grid" id="preset-grid"></div>
+                        <div class="gradient-actions">
+                            <button id="random-gradient-btn" class="action-btn small">Случайный градиент</button>
+                        </div>
                     </div>
                 </div>
+
                 <div class="save-button-container" id="settings-save-btn-container" style="display: none;">
                     <button id="save-settings-btn" class="action-btn">Сохранить</button>
                 </div>

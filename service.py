@@ -35,6 +35,12 @@ def log(text: str, mode: int) -> None:
             print(f"[WARNING] ~ {text}")
         case 2:
             print(f"[ERROR] ~ {text}\n[PLEASE CREATE ISSULE ON GITHUB]")
+    
+    try:
+        import eel
+        eel.addLog(text, mode)()
+    except:
+        pass
 
 def set_sudo_password(password):
     global SUDO_PASSWORD
