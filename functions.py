@@ -169,9 +169,6 @@ def downloadzapret(config):
             print("ZIP-архив не найден среди активов.")
     else:
         print(f'Ошибка при получении последнего релиза: {response.status_code}')
-    with open("/data/service.py", "w") as f:
-        with open("newservc.bat", "r") as s:
-            f.write(s.read()) 
 
     applysets()
     applyservc()

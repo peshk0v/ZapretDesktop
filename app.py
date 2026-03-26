@@ -6,6 +6,7 @@ import service as sv
 
 config = fn.getConf()
 print(fn.getCurrent())
+if not os.path.exists("data"): os.mkdir("data")
 if not any(os.scandir('data/')):
     fn.downloadzapret(fn.getConf())
 else: print(f"Zapret Installed")
