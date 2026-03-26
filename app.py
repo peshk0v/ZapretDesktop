@@ -64,4 +64,12 @@ def getsets():
 def savesets(sets):
     fn.savesets(sets)
 
+@eel.expose
+def get_theme():
+    return fn.get_theme()
+
+@eel.expose
+def save_theme(theme):
+    fn.save_theme(theme)
+
 eel.start('index.html', mode='edge')

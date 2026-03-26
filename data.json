@@ -1,1 +1,24 @@
-{"service": false, "settings": {"IPSET": "loaded", "GameFilter": "all"}}
+{
+    "service": false,
+    "settings": {
+        "IPSET": "loaded",
+        "GameFilter": "all",
+        "autoUpdateServices": false,
+        "autoUpdateZapret": false
+    },
+    "theme": {
+        "angle": 135,
+        "start": {
+            "r": 102,
+            "g": 126,
+            "b": 234
+        },
+        "end": {
+            "r": 118,
+            "g": 75,
+            "b": 162
+        },
+        "preset": "Purple Dream"
+    },
+    "baseExclude": "pusher.com\nlive-video.net\nmail.ru\ncitilink.ru\nyandex.com\nnvidia.com\ndonationalerts.com\nvk.com\nyandex.kz\nmts.ru\nmultimc.org\nya.ru\ndns-shop.ru\nhabr.com\n3dnews.ru\nsberbank.ru\nozon.ru\nwildberries.ru\nakamaitechnologies.com\nmsi.com\n2ip.ru\nyandex.ru\nboosty.to\ntanki.su\nlesta.ru\nkorabli.su\ntanksblitz.ru\nreg.ru"
+}

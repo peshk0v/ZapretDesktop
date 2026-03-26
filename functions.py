@@ -22,11 +22,11 @@ def oblist():
     return ret
 
 def getdata():
-    with open("data.json", "r") as f:
+    with open("data.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
 def setdata(dta):
-    with open("data.json", "w") as f:
+    with open("data.json", "w", encoding="utf-8") as f:
         json.dump(dta, f)
 
 def applysets():
@@ -36,11 +36,16 @@ def applysets():
 
 def getsets():
     dta = getdata()
-    return dta["settings"]
+    return dta.get("settings", {"IPSET": "loaded", "GameFilter": "all", "autoUpdateServices": False, "autoUpdateZapret": False})
 
-def savesets(set):
+def savesets(sets):
     dta = getdata()
-    dta["settings"] = set
+    if "settings" not in dta:
+        dta["settings"] = {}
+    dta["settings"]["IPSET"] = sets.get("IPSET", "loaded")
+    dta["settings"]["GameFilter"] = sets.get("GameFilter", "all")
+    dta["settings"]["autoUpdateServices"] = sets.get("autoUpdateServices", False)
+    dta["settings"]["autoUpdateZapret"] = sets.get("autoUpdateZapret", False)
     setdata(dta)
     applysets()
     sv.restart()
@@ -85,14 +90,20 @@ def getservc():
         return json.load(f)
 
 def applyservc():
+    cfg = getdata()
     servc = getservc()
-    with open("data\lists\list-general.txt", "w") as lg:
-        new = ""
-        for i in servc:
-            if i["Enabled"]:
-                for a in i["IPS"]:
-                    new = new + a + "\n"
-        lg.write(new)
+    with open("data\\lists\\list-general.txt", "w") as lg:
+        with open("data\\lists\\list-exclude.txt", "w") as ex:
+            newlg = ""
+            newex = cfg.get("baseExclude", "")
+            for i in servc:
+                if i["Enabled"]:
+                    for a in i["IPS"]:
+                        newlg = newlg + a + "\n"
+                    for b in i.get("Exclude", []):
+                        newex = newex + "\n" + b
+            ex.write(newex)
+            lg.write(newlg)
 
 
 def setservc(dta):
@@ -164,3 +175,17 @@ def downloadzapret(config):
 
     applysets()
     applyservc()
+
+def get_theme():
+    dta = getdata()
+    return dta.get("theme", {
+        "angle": 135,
+        "start": {"r": 102, "g": 126, "b": 234},
+        "end": {"r": 118, "g": 75, "b": 162},
+        "preset": "Purple Dream"
+    })
+
+def save_theme(theme):
+    dta = getdata()
+    dta["theme"] = theme
+    setdata(dta)
