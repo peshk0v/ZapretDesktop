@@ -1,8 +1,29 @@
 [
     {
-        "Name":"Cupsize 1", "File":"cupsize(kiv).png", "Color":[201,1,1]
+        "Name":"Cupsize I", "File":"cupsize1.png", "Color":[201,1,1]
     },
     {
-        "Name":"Cupsize 2", "File":"cupsize(peno).png", "Color":[255,161,161]
+        "Name":"Cupsize II", "File":"cupsize2.png", "Color":[255,161,161]
+    },
+    {
+        "Name":"Cupsize III", "File":"cupsize3.png", "Color":[66,66,66]
+    },
+    {
+        "Name": "Cupsize IV", "File":"cupsize4.png", "Color":[10,84,3]
+    },
+    {
+        "Name": "Cupsize V", "File":"cupsize5.png", "Color":[66,66,66]
+    },
+    {
+        "Name":"Cupsize VI", "File":"cupsize6.png", "Color":[66,66,66]
+    },
+    {
+        "Name":"Cupsize VII", "File":"cupsize7.png", "Color":[201,1,1]
+    },
+    {
+        "Name":"EVA", "File":"EVA.png", "Color":[0,150,184]
+    },
+    {
+        "Name":"Madk1d", "File":"madk1d.png", "Color":[112,0,0]
     }
 ]
