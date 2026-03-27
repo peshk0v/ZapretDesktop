@@ -118,7 +118,7 @@ def setservc(dta):
     return True
     
 def getMode():
-    if sys.argv[1]:
+    if len(sys.argv) > 1:
         match sys.argv[1]:
             case "-f": return "firefox"
             case "-e": return "edge"

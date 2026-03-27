@@ -156,4 +156,4 @@ def select_background_file():
         print(f'Ошибка выбора файла: {e}')
         return None
 
-eel.start('index.html', mode=fn.getMode(), size=(495, 270))
+eel.start('index.html', mode=fn.getMode(), size=(900, 600))
