@@ -48,6 +48,7 @@ def oblist() -> list:
 
 def getCurrent() -> str:
     """Возвращает текущую стратегию (с .bat)."""
+    print(sv.service_control(8))
     return sv.service_control(8)["strategy"]
 
 
@@ -255,7 +256,8 @@ def get_theme() -> dict:
         "angle": 135,
         "start": {"r": 102, "g": 126, "b": 234},
         "end": {"r": 118, "g": 75, "b": 162},
-        "preset": None
+        "preset": None,
+        "type": "gradient"
     })
 
 

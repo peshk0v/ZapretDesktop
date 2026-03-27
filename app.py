@@ -5,11 +5,14 @@ import service as sv
 import functions as fn
 import threading, subprocess
 import os
+import json
+import shutil
 
 eel.init(f"{sv.BASE_DIR}/web")
 sudo_password = None
 password_event = threading.Event()
 PASSWORD_FILE = sv.PASSWORD_FILE
+BGS_FILE = f"{sv.BASE_DIR}/web/style/content/backgrounds/bgs.json"
 
 # ----------------------------------------------------------------------
 # Password handling
@@ -160,6 +163,84 @@ def save_theme(theme: dict) -> None:
 def add_log(text: str, mode: int):
     """Мост для передачи логов из Python в JavaScript."""
     pass
+
+@eel.expose
+def get_backgrounds():
+    """Возвращает список обоев из bgs.json."""
+    try:
+        with open(BGS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f'Ошибка загрузки обоев: {e}')
+        return []
+
+@eel.expose
+def add_background(filename: str, name: str, color: list):
+    """Добавляет новые обои."""
+    try:
+        dest_filename = os.path.basename(filename)
+        dest_path = f"{sv.BASE_DIR}/web/style/content/backgrounds/{dest_filename}"
+        
+        if os.path.exists(filename) and not os.path.exists(dest_path):
+            shutil.copy2(filename, dest_path)
+        
+        with open(BGS_FILE, 'r', encoding='utf-8') as f:
+            backgrounds = json.load(f)
+        
+        backgrounds.append({
+            "Name": name,
+            "File": dest_filename,
+            "Color": color
+        })
+        
+        with open(BGS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(backgrounds, f, indent=4, ensure_ascii=False)
+        
+        return True
+    except Exception as e:
+        print(f'Ошибка добавления обоев: {e}')
+        return False
+
+@eel.expose
+def edit_background_color(index: int, color: list):
+    """Изменяет акцентный цвет обоев."""
+    try:
+        with open(BGS_FILE, 'r', encoding='utf-8') as f:
+            backgrounds = json.load(f)
+        
+        if 0 <= index < len(backgrounds):
+            backgrounds[index]["Color"] = color
+            
+            with open(BGS_FILE, 'w', encoding='utf-8') as f:
+                json.dump(backgrounds, f, indent=4, ensure_ascii=False)
+            
+            return True
+        return False
+    except Exception as e:
+        print(f'Ошибка изменения цвета: {e}')
+        return False
+
+@eel.expose
+def select_background_file():
+    """Открывает диалог выбора файла (Linux)."""
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+        
+        root = tk.Tk()
+        root.withdraw()
+        
+        file_path = filedialog.askopenfilename(
+            title="Выберите изображение",
+            filetypes=[("Images", "*.png *.jpg *.jpeg *.webp")]
+        )
+        
+        root.destroy()
+        
+        return file_path if file_path else None
+    except Exception as e:
+        print(f'Ошибка выбора файла: {e}')
+        return None
 
 # ----------------------------------------------------------------------
 # Start GUI
