@@ -3,7 +3,7 @@ import requests
 import zipfile
 import io
 import ctypes
-import os, time
+import os, time, sys
 import service as sv
 
 def getConf():
@@ -117,6 +117,16 @@ def setservc(dta):
     sv.restart()
     return True
     
+def getMode():
+    if sys.argv[1]:
+        match sys.argv[1]:
+            case "-f": return "firefox"
+            case "-e": return "edge"
+            case "-i": return "msie"
+            case "-c": return "chrome"
+            case "-ca": return "chrome-app"
+            case _: return "chrome"
+    else: return "chrome"
 
 def updServc():
     os.rename("services.json","oldServices.json")
