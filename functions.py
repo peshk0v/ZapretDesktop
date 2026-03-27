@@ -179,7 +179,8 @@ def get_theme():
         "angle": 135,
         "start": {"r": 102, "g": 126, "b": 234},
         "end": {"r": 118, "g": 75, "b": 162},
-        "preset": "Purple Dream"
+        "preset": "Purple Dream",
+        "type": "gradient"
     })
 
 def save_theme(theme):

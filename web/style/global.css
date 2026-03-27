@@ -32,6 +32,8 @@ body {
     background: linear-gradient(var(--gradient-angle),
                 rgb(var(--gradient-start-r), var(--gradient-start-g), var(--gradient-start-b)),
                 rgb(var(--gradient-end-r), var(--gradient-end-g), var(--gradient-end-b)));
+    background-size: cover;
+    background-position: center;
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -937,4 +939,180 @@ input:checked + .slider:before {
 .action-btn.small {
     padding: 10px 25px;
     font-size: 1rem;
+}
+
+.background-type-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.type-btn {
+    padding: 10px 20px;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.7);
+    transition: all 0.2s;
+}
+
+.type-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.type-btn.active {
+    background: rgba(255, 255, 255, 0.5);
+    color: rgb(var(--color-primary-dark-r), var(--color-primary-dark-g), var(--color-primary-dark-b));
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.preset-card {
+    position: relative;
+}
+
+.preset-card .color-edit-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.preset-card:hover .color-edit-btn {
+    opacity: 1;
+}
+
+.preset-card.selected {
+    border-color: rgb(var(--color-primary-dark-r), var(--color-primary-dark-g), var(--color-primary-dark-b));
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 25px;
+    min-width: 350px;
+    max-width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.modal-content.small {
+    min-width: 250px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.modal-body {
+    margin-bottom: 20px;
+}
+
+.modal-footer {
+    text-align: right;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"] {
+    width: 100%;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.form-group input[type="color"] {
+    width: 60px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.file-select-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.file-select-wrapper input {
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.text-blur {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 8px;
+    padding: 2px 6px;
 }

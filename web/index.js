@@ -9,6 +9,10 @@ let originalSettings = null;
 let settingsChanged = false;
 let currentTheme = null;
 let themeChanged = false;
+let backgroundList = [];
+let backgroundsChanged = false;
+let currentBackgroundType = 'gradient';
+let editingBackgroundIndex = null;
 
 function safeAddEventListener(id, event, handler) {
     const element = document.getElementById(id);
@@ -209,20 +213,28 @@ function setRandomGradient() {
   return { angle, start: color1, end: color2 };
 }
 
-function applyTheme(theme) {
-  const root = document.documentElement;
-  root.style.setProperty('--gradient-angle', theme.angle + 'deg');
-  root.style.setProperty('--gradient-start-r', theme.start.r);
-  root.style.setProperty('--gradient-start-g', theme.start.g);
-  root.style.setProperty('--gradient-start-b', theme.start.b);
-  root.style.setProperty('--gradient-end-r', theme.end.r);
-  root.style.setProperty('--gradient-end-g', theme.end.g);
-  root.style.setProperty('--gradient-end-b', theme.end.b);
-}
-
 async function loadTheme() {
   try {
     currentTheme = await eel.get_theme()();
+    if (!currentTheme) {
+      currentTheme = {
+        angle: 135,
+        start: {r: 102, g: 126, b: 234},
+        end: {r: 118, g: 75, b: 162},
+        preset: 'Purple Dream',
+        type: 'gradient'
+      };
+    }
+    if (!currentTheme.type) {
+      currentTheme.type = 'gradient';
+    }
+    if (currentTheme.type === 'image') {
+      currentBackgroundType = 'image';
+      document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.type-btn[data-type="image"]').classList.add('active');
+      document.getElementById('gradient-section').style.display = 'none';
+      document.getElementById('image-section').style.display = 'block';
+    }
     applyTheme(currentTheme);
   } catch (error) {
     console.error('Ошибка загрузки темы:', error);
@@ -262,19 +274,20 @@ function renderPresets() {
     card.appendChild(preview);
     card.appendChild(name);
 
-    if (currentTheme && currentTheme.preset === preset.name) {
+    if (currentTheme && currentTheme.preset === preset.name && currentBackgroundType === 'gradient') {
       card.classList.add('selected');
     }
 
     card.addEventListener('click', async () => {
-      document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('#preset-grid .preset-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
 
       currentTheme = {
         angle: preset.angle,
         start: preset.start,
         end: preset.end,
-        preset: preset.name
+        preset: preset.name,
+        type: 'gradient'
       };
       applyTheme(currentTheme);
       themeChanged = true;
@@ -283,6 +296,229 @@ function renderPresets() {
 
     grid.appendChild(card);
   });
+}
+
+async function loadBackgrounds() {
+  try {
+    backgroundList = await eel.get_backgrounds()();
+    renderBackgroundCards();
+  } catch (error) {
+    console.error('Ошибка загрузки обоев:', error);
+  }
+}
+
+function renderBackgroundCards() {
+  const grid = document.getElementById('background-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  backgroundList.forEach((bg, index) => {
+    const card = document.createElement('div');
+    card.className = 'preset-card';
+    card.dataset.index = index;
+
+    const preview = document.createElement('div');
+    preview.className = 'preset-preview';
+    preview.style.backgroundImage = `url('style/content/backgrounds/${bg.File}')`;
+    preview.style.backgroundSize = 'cover';
+    preview.style.backgroundPosition = 'center';
+
+    const colorBtn = document.createElement('button');
+    colorBtn.className = 'color-edit-btn';
+    colorBtn.innerHTML = '&#xf044;';
+    colorBtn.title = 'Изменить цвет';
+    colorBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditColorModal(index);
+    });
+
+    const name = document.createElement('div');
+    name.className = 'preset-name';
+    name.textContent = bg.Name;
+
+    card.appendChild(preview);
+    card.appendChild(colorBtn);
+    card.appendChild(name);
+
+    if (currentTheme && currentTheme.type === 'image' && currentTheme.imageFile === bg.File) {
+      card.classList.add('selected');
+    }
+
+    const color = bg.Color || [255, 107, 107];
+    card.style.boxShadow = `0 4px 15px rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.4)`;
+
+    card.addEventListener('click', async () => {
+      document.querySelectorAll('#background-grid .preset-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+
+      currentTheme = {
+        type: 'image',
+        imageFile: bg.File,
+        color: bg.Color
+      };
+      applyImageTheme(bg.File, bg.Color);
+      themeChanged = true;
+      await saveCurrentTheme();
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+function applyImageTheme(imageFile, color) {
+  const root = document.documentElement;
+  document.body.style.background = `url('style/content/backgrounds/${imageFile}')`;
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundPosition = 'center';
+  
+  if (color) {
+    root.style.setProperty('--gradient-start-r', color[0]);
+    root.style.setProperty('--gradient-start-g', color[1]);
+    root.style.setProperty('--gradient-start-b', color[2]);
+    root.style.setProperty('--gradient-end-r', color[0]);
+    root.style.setProperty('--gradient-end-g', color[1]);
+    root.style.setProperty('--gradient-end-b', color[2]);
+  }
+}
+
+function applyTheme(theme) {
+  if (theme.type === 'image') {
+    applyImageTheme(theme.imageFile, theme.color);
+    return;
+  }
+  
+  const root = document.documentElement;
+  document.body.style.background = '';
+  root.style.setProperty('--gradient-angle', theme.angle + 'deg');
+  root.style.setProperty('--gradient-start-r', theme.start.r);
+  root.style.setProperty('--gradient-start-g', theme.start.g);
+  root.style.setProperty('--gradient-start-b', theme.start.b);
+  root.style.setProperty('--gradient-end-r', theme.end.r);
+  root.style.setProperty('--gradient-end-g', theme.end.g);
+  root.style.setProperty('--gradient-end-b', theme.end.b);
+}
+
+function initBackgroundTypeToggle() {
+  document.querySelectorAll('.type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      currentBackgroundType = btn.dataset.type;
+      
+      if (currentBackgroundType === 'gradient') {
+        document.getElementById('gradient-section').style.display = 'block';
+        document.getElementById('image-section').style.display = 'none';
+        
+        if (currentTheme && currentTheme.type !== 'gradient') {
+          currentTheme = {
+            angle: 135,
+            start: {r: 102, g: 126, b: 234},
+            end: {r: 118, g: 75, b: 162},
+            preset: 'Purple Dream',
+            type: 'gradient'
+          };
+          applyTheme(currentTheme);
+          saveCurrentTheme();
+        } else if (currentTheme && currentTheme.type === 'gradient') {
+          applyTheme(currentTheme);
+        }
+      } else {
+        document.getElementById('gradient-section').style.display = 'none';
+        document.getElementById('image-section').style.display = 'block';
+        loadBackgrounds();
+      }
+    });
+  });
+}
+
+function openAddBackgroundModal() {
+  document.getElementById('add-background-modal').style.display = 'flex';
+  document.getElementById('bg-filename').value = '';
+  document.getElementById('bg-name').value = '';
+  document.getElementById('bg-color').value = '#ff6b6b';
+}
+
+function closeAddBackgroundModal() {
+  document.getElementById('add-background-modal').style.display = 'none';
+}
+
+function openEditColorModal(index) {
+  editingBackgroundIndex = index;
+  const bg = backgroundList[index];
+  const color = bg.Color || [255, 107, 107];
+  const hexColor = '#' + color.map(c => c.toString(16).padStart(2, '0')).join('');
+  document.getElementById('edit-bg-color').value = hexColor;
+  document.getElementById('edit-color-modal').style.display = 'flex';
+}
+
+function closeEditColorModal() {
+  document.getElementById('edit-color-modal').style.display = 'none';
+  editingBackgroundIndex = null;
+}
+
+async function saveNewBackground() {
+  const filename = document.getElementById('bg-filename').value;
+  const name = document.getElementById('bg-name').value;
+  const colorHex = document.getElementById('bg-color').value;
+  
+  if (!filename || !name) {
+    alert('Пожалуйста, выберите файл и введите название');
+    return;
+  }
+  
+  const color = [
+    parseInt(colorHex.slice(1, 3), 16),
+    parseInt(colorHex.slice(3, 5), 16),
+    parseInt(colorHex.slice(5, 7), 16)
+  ];
+  
+  try {
+    await eel.add_background(filename, name, color)();
+    closeAddBackgroundModal();
+    await loadBackgrounds();
+  } catch (error) {
+    console.error('Ошибка сохранения обоев:', error);
+    alert('Ошибка при сохранении обоев');
+  }
+}
+
+async function saveEditedColor() {
+  if (editingBackgroundIndex === null) return;
+  
+  const colorHex = document.getElementById('edit-bg-color').value;
+  const color = [
+    parseInt(colorHex.slice(1, 3), 16),
+    parseInt(colorHex.slice(3, 5), 16),
+    parseInt(colorHex.slice(5, 7), 16)
+  ];
+  
+  try {
+    await eel.edit_background_color(editingBackgroundIndex, color)();
+    closeEditColorModal();
+    await loadBackgrounds();
+    
+    if (currentTheme && currentTheme.type === 'image') {
+      const bg = backgroundList[editingBackgroundIndex];
+      if (bg) {
+        currentTheme.color = bg.Color;
+        applyImageTheme(currentTheme.imageFile, bg.Color);
+      }
+    }
+  } catch (error) {
+    console.error('Ошибка изменения цвета:', error);
+  }
+}
+
+async function selectBackgroundFile() {
+  try {
+    const result = await eel.select_background_file()();
+    if (result) {
+      document.getElementById('bg-filename').value = result;
+    }
+  } catch (error) {
+    console.error('Ошибка выбора файла:', error);
+  }
 }
 
 function initSettingsTabs() {
@@ -295,6 +531,7 @@ function initSettingsTabs() {
 
       if (tab.dataset.tab === 'desktop') {
         renderPresets();
+        initBackgroundTypeToggle();
       }
     });
   });
@@ -654,7 +891,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       angle: angle,
       start: color1,
       end: color2,
-      preset: null
+      preset: null,
+      type: 'gradient'
     };
 
     applyTheme(currentTheme);
@@ -666,5 +904,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     renderPresets();
+  });
+
+  safeAddEventListener('add-background-btn', 'click', openAddBackgroundModal);
+  safeAddEventListener('close-add-modal', 'click', closeAddBackgroundModal);
+  safeAddEventListener('close-edit-modal', 'click', closeEditColorModal);
+  safeAddEventListener('save-background-btn', 'click', saveNewBackground);
+  safeAddEventListener('save-color-btn', 'click', saveEditedColor);
+  safeAddEventListener('select-bg-file', 'click', selectBackgroundFile);
+
+  document.getElementById('add-background-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'add-background-modal') closeAddBackgroundModal();
+  });
+  document.getElementById('edit-color-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'edit-color-modal') closeEditColorModal();
   });
 });
