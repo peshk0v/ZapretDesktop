@@ -729,12 +729,41 @@ def install(strategy_file: str) -> bool:
         print(f"Ошибка запуска службы: {start_result.stderr}")
         return False
 
-    time.sleep(3)
-    proc_check = run_cmd(["tasklist", "/FI", "IMAGENAME eq winws.exe"], capture_output=True)
-    if "winws.exe" in proc_check.stdout:
-        print("✓ Процесс winws.exe успешно запущен.")
-    else:
-        print("✗ ВНИМАНИЕ: процесс winws.exe не обнаружен после запуска службы.")
+    # Ждём и проверяем несколько раз (до 10 секунд)
+    max_attempts = 5
+    process_found = False
+    
+    for attempt in range(max_attempts):
+        time.sleep(2)
+        
+        # Проверяем статус службы
+        service_state = service_query_status(SERVICE_ZAPRET)
+        
+        # Проверяем процесс
+        proc_check = run_cmd(["tasklist", "/FI", "IMAGENAME eq winws.exe"], capture_output=True)
+        
+        if service_state == "RUNNING" and "winws.exe" in proc_check.stdout:
+            process_found = True
+            print("✓ Процесс winws.exe успешно запущен.")
+            break
+        elif service_state == "RUNNING" and "winws.exe" not in proc_check.stdout:
+            # Служба запущена, но процесс ещё не появился - продолжаем ждать
+            if attempt < max_attempts - 1:
+                print(f"Служба работает, ожидание процесса... ({attempt + 1}/{max_attempts})")
+        else:
+            if attempt < max_attempts - 1:
+                print(f"Ожидание запуска... ({attempt + 1}/{max_attempts})")
+    
+    if not process_found:
+        # Проверяем ещё раз финально
+        service_state = service_query_status(SERVICE_ZAPRET)
+        proc_check = run_cmd(["tasklist", "/FI", "IMAGENAME eq winws.exe"], capture_output=True)
+        
+        if service_state == "RUNNING":
+            print("✓ Служба zapret запущена (проверьте работу вручную).")
+            process_found = True
+        else:
+            print(f"✗ ВНИМАНИЕ: служба в состоянии {service_state}, процесс не обнаружен.")
 
     # Сохраняем имя стратегии в реестр (Windows only)
     if sys.platform == 'win32':
