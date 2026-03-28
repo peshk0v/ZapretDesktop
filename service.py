@@ -9,12 +9,14 @@ import subprocess
 import shutil
 import urllib.request
 import urllib.error
-import winreg
 import tempfile
 import time
 import ctypes
 from pathlib import Path
 from typing import Optional, Tuple, Dict, List, Union, Any
+
+if sys.platform == 'win32':
+    import winreg
 
 # Константы
 LOCAL_VERSION = "1.9.7b"
@@ -45,6 +47,8 @@ UTILS_DIR = DATA_DIR / "utils"
 # ----------------------------------------------------------------------
 def is_admin() -> bool:
     """Проверка, запущен ли процесс с правами администратора."""
+    if sys.platform != 'win32':
+        return True
     try:
         return ctypes.windll.shell32.IsUserAnAdmin() != 0
     except AttributeError:
@@ -59,17 +63,29 @@ def run_cmd(cmd: list, capture_output: bool = False, input_data: Optional[str] =
     """Запускает внешнюю команду и возвращает результат."""
     encoding = 'cp866' if sys.platform == 'win32' else 'utf-8'
     try:
-        return subprocess.run(
-            cmd,
-            capture_output=capture_output,
-            text=True,
-            input=input_data,
-            encoding=encoding,
-            check=False
-        )
+        if capture_output:
+            return subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                input=input_data,
+                encoding=encoding,
+                check=False
+            )
+        else:
+            return subprocess.run(
+                cmd,
+                text=True,
+                input=input_data,
+                encoding=encoding,
+                check=False
+            )
+    except FileNotFoundError:
+        print(f"Команда не найдена: {cmd[0]}", file=sys.stderr)
+        return subprocess.CompletedProcess(cmd, returncode=-1, stdout="", stderr="Команда не найдена")
     except Exception as e:
         print(f"Ошибка выполнения команды {' '.join(cmd)}: {e}", file=sys.stderr)
-        return subprocess.CompletedProcess(cmd, returncode=-1, stderr=str(e))
+        return subprocess.CompletedProcess(cmd, returncode=-1, stdout="", stderr=str(e))
 
 def ensure_dir(path: Path) -> None:
     """Создаёт каталог, если не существует."""
@@ -291,6 +307,8 @@ def set_ipset_mode(mode: str) -> bool:
             list_file.touch()
         print("Режим any установлен.")
         return True
+    
+    return False
 
 def ipset_switch() -> bool:
     """
@@ -418,15 +436,16 @@ def service_diagnostics() -> Dict[str, Union[bool, str, List[str]]]:
     # 2. Прокси
     proxy_enabled = False
     proxy_server = ""
-    try:
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-                            r"Software\Microsoft\Windows\CurrentVersion\Internet Settings") as key:
-            value, _ = winreg.QueryValueEx(key, "ProxyEnable")
-            proxy_enabled = bool(value)
-            if proxy_enabled:
-                proxy_server, _ = winreg.QueryValueEx(key, "ProxyServer")
-    except FileNotFoundError:
-        pass
+    if sys.platform == 'win32':
+        try:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                                r"Software\Microsoft\Windows\CurrentVersion\Internet Settings") as key:
+                value, _ = winreg.QueryValueEx(key, "ProxyEnable")
+                proxy_enabled = bool(value)
+                if proxy_enabled:
+                    proxy_server, _ = winreg.QueryValueEx(key, "ProxyServer")
+        except FileNotFoundError:
+            pass
     result['proxy_enabled'] = proxy_enabled
     if proxy_enabled:
         result['proxy_server'] = proxy_server
@@ -471,25 +490,26 @@ def service_diagnostics() -> Dict[str, Union[bool, str, List[str]]]:
 
     # 11. DNS (DoH)
     doh_count = 0
-    try:
-        key_path = r"SYSTEM\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters"
-        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path) as base_key:
-            i = 0
-            while True:
-                try:
-                    subkey_name = winreg.EnumKey(base_key, i)
-                    with winreg.OpenKey(base_key, subkey_name) as subkey:
-                        try:
-                            flags, _ = winreg.QueryValueEx(subkey, "DohFlags")
-                            if flags > 0:
-                                doh_count += 1
-                        except FileNotFoundError:
-                            pass
-                    i += 1
-                except OSError:
-                    break
-    except FileNotFoundError:
-        pass
+    if sys.platform == 'win32':
+        try:
+            key_path = r"SYSTEM\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters"
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path) as base_key:
+                i = 0
+                while True:
+                    try:
+                        subkey_name = winreg.EnumKey(base_key, i)
+                        with winreg.OpenKey(base_key, subkey_name) as subkey:
+                            try:
+                                flags, _ = winreg.QueryValueEx(subkey, "DohFlags")
+                                if flags > 0:
+                                    doh_count += 1
+                            except FileNotFoundError:
+                                pass
+                        i += 1
+                    except OSError:
+                        break
+        except FileNotFoundError:
+            pass
     result['doh_configured'] = (doh_count > 0)
 
     # 12. Проверка hosts на youtube
@@ -521,15 +541,18 @@ def service_diagnostics() -> Dict[str, Union[bool, str, List[str]]]:
 # ----------------------------------------------------------------------
 # Управление службами
 # ----------------------------------------------------------------------
-def service_status() -> Dict[str, any]:
+def service_status() -> Dict[str, Any]:
     """Возвращает структурированную информацию о состоянии служб."""
     info = {}
-    try:
-        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
-                            r"SYSTEM\CurrentControlSet\Services\zapret") as key:
-            strategy, _ = winreg.QueryValueEx(key, "zapret-discord-youtube")
-            info['strategy'] = strategy
-    except FileNotFoundError:
+    if sys.platform == 'win32':
+        try:
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                                r"SYSTEM\CurrentControlSet\Services\zapret") as key:
+                strategy, _ = winreg.QueryValueEx(key, "zapret-discord-youtube")
+                info['strategy'] = strategy
+        except FileNotFoundError:
+            info['strategy'] = None
+    else:
         info['strategy'] = None
 
     info['zapret_service'] = service_query_status(SERVICE_ZAPRET)
@@ -713,13 +736,14 @@ def install(strategy_file: str) -> bool:
     else:
         print("✗ ВНИМАНИЕ: процесс winws.exe не обнаружен после запуска службы.")
 
-    # Сохраняем имя стратегии в реестр
-    try:
-        with winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE,
-                              r"SYSTEM\CurrentControlSet\Services\zapret") as key:
-            winreg.SetValueEx(key, "zapret-discord-youtube", 0, winreg.REG_SZ, strategy_path.stem)
-    except Exception as e:
-        print(f"Не удалось записать имя стратегии в реестр: {e}")
+    # Сохраняем имя стратегии в реестр (Windows only)
+    if sys.platform == 'win32':
+        try:
+            with winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE,
+                                  r"SYSTEM\CurrentControlSet\Services\zapret") as key:
+                winreg.SetValueEx(key, "zapret-discord-youtube", 0, winreg.REG_SZ, strategy_path.stem)
+        except Exception as e:
+            print(f"Не удалось записать имя стратегии в реестр: {e}")
 
     print("Служба zapret успешно установлена и запущена.")
     return True
@@ -744,16 +768,52 @@ def run_tests() -> None:
         raise RuntimeError("Требуется PowerShell 3.0 или новее")
 
     # Запускаем в отдельном окне
-    subprocess.Popen(
-        ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(ps_script)],
-        creationflags=subprocess.CREATE_NEW_CONSOLE
-    )
-    print("Запущен тестовый скрипт в новом окне PowerShell.")
+    if sys.platform == 'win32':
+        subprocess.Popen(
+            ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(ps_script)],
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        )
+    else:
+        subprocess.Popen(
+            ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(ps_script)]
+        )
+    print("Запущен тестовый скрипт.")
 
-def restart():
-    service_remove()
-    with open("current.zapret", "r") as f:
-        install(f.read())
+def restart() -> bool:
+    """Перезапускает службу zapret. Возвращает True при успехе."""
+    try:
+        service_remove()
+        current_file = BASE_DIR / "current.zapret"
+        if not current_file.exists():
+            print("Ошибка: файл current.zapret не найден")
+            return False
+        with open(current_file, "r") as f:
+            strategy = f.read().strip()
+        return install(strategy)
+    except Exception as e:
+        print(f"Ошибка при перезапуске: {e}")
+        return False
+
+def set_autostart(enable: bool) -> bool:
+    """
+    Включает или отключает автозапуск zapret.
+    enable: True - включить автозапуск, False - отключить
+    Возвращает True при успехе.
+    """
+    try:
+        if enable:
+            current_file = BASE_DIR / "current.zapret"
+            if not current_file.exists():
+                print("Ошибка: файл current.zapret не найден")
+                return False
+            with open(current_file, "r") as f:
+                strategy = f.read().strip()
+            return install(strategy)
+        else:
+            return service_remove()
+    except Exception as e:
+        print(f"Ошибка при изменении автозапуска: {e}")
+        return False
 
 # ----------------------------------------------------------------------
 # Дополнительные функции для совместимости с оригинальным интерфейсом

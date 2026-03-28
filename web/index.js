@@ -743,7 +743,7 @@ function renderServicesList(services) {
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = service.Enabled;
-        checkbox.addEventListener('change', (e) => {
+        checkbox.addEventListener('click', (e) => {
             e.stopPropagation();
             if (!servicesChanged) {
                 servicesChanged = true;
