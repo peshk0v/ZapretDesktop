@@ -7,6 +7,7 @@ import threading, subprocess
 import os
 import json
 import shutil
+import glob
 
 eel.init(f"{sv.BASE_DIR}/web")
 sudo_password = None
@@ -15,10 +16,58 @@ PASSWORD_FILE = sv.PASSWORD_FILE
 BGS_FILE = f"{sv.BASE_DIR}/web/style/content/backgrounds/bgs.json"
 
 # ----------------------------------------------------------------------
+# Browser detection
+# ----------------------------------------------------------------------
+def detect_browser():
+    preferred = ["firefox", "chrome", "msedge", "brave", "chromium"]
+    
+    for browser in preferred:
+        if browser == "msedge":
+            path = shutil.which("msedge") or shutil.which("microsoft-edge")
+        else:
+            path = shutil.which(browser)
+        if path:
+            return browser
+    
+    desktop_dirs = [
+        "/usr/share/applications",
+        "/usr/local/share/applications",
+        os.path.expanduser("~/.local/share/applications")
+    ]
+    
+    browser_desktop = {
+        "firefox": ["firefox", "Firefox"],
+        "chrome": ["google-chrome", "Google Chrome"],
+        "msedge": ["msedge", "microsoft-edge", "Microsoft Edge"],
+        "brave": ["brave-browser", "Brave"],
+        "chromium": ["chromium", "Chromium"]
+    }
+    
+    for desktop_dir in desktop_dirs:
+        if not os.path.isdir(desktop_dir):
+            continue
+        for browser, names in browser_desktop.items():
+            for name in names:
+                pattern = os.path.join(desktop_dir, f"{name}.desktop")
+                if glob.glob(pattern):
+                    return browser
+    
+    for browser in ["firefox", "google-chrome", "chrome", "chromium", "brave", "msedge", "microsoft-edge"]:
+        if shutil.which(browser):
+            if browser in ["google-chrome", "chrome"]:
+                return "chrome"
+            if browser == "microsoft-edge":
+                return "msedge"
+            return browser
+    
+    return None
+
+BROWSER_MODE = detect_browser()
+
+# ----------------------------------------------------------------------
 # Password handling
 # ----------------------------------------------------------------------
 def _get_saved_password():
-    """Внутренняя функция для чтения пароля из файла."""
     try:
         if PASSWORD_FILE.exists():
             with open(PASSWORD_FILE, 'r') as f:
@@ -28,7 +77,6 @@ def _get_saved_password():
     return None
 
 def _save_sudo_password(password):
-    """Внутренняя функция для сохранения пароля в файл."""
     try:
         with open(PASSWORD_FILE, 'w') as f:
             f.write(password)
@@ -62,11 +110,16 @@ def get_status() -> bool:
 @eel.expose
 def start_zapret() -> bool:
     sv.service_control(1)
-    return get_status()
+    import time
+    time.sleep(1)
+    return fn.zapStat()
 
 @eel.expose
 def stop_zapret() -> bool:
     sv.service_control(4)
+    import time
+    time.sleep(1)
+    return fn.zapStat()
     return get_status()
 
 @eel.expose
@@ -116,17 +169,14 @@ def get_autostart_status() -> bool:
 
 @eel.expose
 def get_saved_password():
-    """EEL-функция для получения пароля из файла."""
     return _get_saved_password()
 
 @eel.expose
 def save_sudo_password(password):
-    """EEL-функция для сохранения пароля в файл."""
     return _save_sudo_password(password)
 
 @eel.expose
 def set_sudo_password(password):
-    """EEL-функция для установки пароля в памяти и разблокировки ожидания."""
     global sudo_password
     sudo_password = password
     sv.set_sudo_password(password)
@@ -135,7 +185,6 @@ def set_sudo_password(password):
 
 @eel.expose
 def test_sudo():
-    """Проверяет, работает ли сохранённый пароль sudo."""
     password = get_sudo_password_callback()
     if password:
         try:
@@ -161,12 +210,10 @@ def save_theme(theme: dict) -> None:
 
 @eel.expose
 def add_log(text: str, mode: int):
-    """Мост для передачи логов из Python в JavaScript."""
     pass
 
 @eel.expose
 def get_backgrounds():
-    """Возвращает список обоев из bgs.json."""
     try:
         with open(BGS_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -176,7 +223,6 @@ def get_backgrounds():
 
 @eel.expose
 def add_background(filename: str, name: str, color: list):
-    """Добавляет новые обои."""
     try:
         dest_filename = os.path.basename(filename)
         dest_path = f"{sv.BASE_DIR}/web/style/content/backgrounds/{dest_filename}"
@@ -203,7 +249,6 @@ def add_background(filename: str, name: str, color: list):
 
 @eel.expose
 def edit_background_color(index: int, color: list):
-    """Изменяет акцентный цвет обоев."""
     try:
         with open(BGS_FILE, 'r', encoding='utf-8') as f:
             backgrounds = json.load(f)
@@ -222,27 +267,46 @@ def edit_background_color(index: int, color: list):
 
 @eel.expose
 def select_background_file():
-    """Открывает диалог выбора файла (Linux)."""
     try:
         import tkinter as tk
         from tkinter import filedialog
-        
         root = tk.Tk()
         root.withdraw()
-        
         file_path = filedialog.askopenfilename(
             title="Выберите изображение",
             filetypes=[("Images", "*.png *.jpg *.jpeg *.webp")]
         )
-        
         root.destroy()
-        
         return file_path if file_path else None
     except Exception as e:
         print(f'Ошибка выбора файла: {e}')
         return None
 
+@eel.expose
+def delete_background(index: int):
+    try:
+        with open(BGS_FILE, 'r', encoding='utf-8') as f:
+            backgrounds = json.load(f)
+        
+        if 0 <= index < len(backgrounds):
+            file_path = f"{sv.BASE_DIR}/web/style/content/backgrounds/{backgrounds[index]['File']}"
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            
+            backgrounds.pop(index)
+            
+            with open(BGS_FILE, 'w', encoding='utf-8') as f:
+                json.dump(backgrounds, f, indent=4, ensure_ascii=False)
+            
+            return True
+        return False
+    except Exception as e:
+        print(f'Ошибка удаления обоев: {e}')
+        return False
+
 # ----------------------------------------------------------------------
 # Start GUI
 # ----------------------------------------------------------------------
-eel.start('index.html', mode="firefox")
+if __name__ == "__main__":
+    mode = BROWSER_MODE if BROWSER_MODE else "firefox"
+    eel.start('index.html', mode=mode)

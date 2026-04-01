@@ -1,0 +1,13 @@
+# NOPASSWD rules for ZapretDesktop
+pshkv ALL=(root) NOPASSWD: /home/pshkv/Документы/Code/ZapretDesktop/data/service.sh
+pshkv ALL=(root) NOPASSWD: /home/pshkv/Документы/Code/ZapretDesktop/data/nfqws
+pshkv ALL=(root) NOPASSWD: /usr/bin/nft
+pshkv ALL=(root) NOPASSWD: /usr/bin/pkill *
+pshkv ALL=(root) NOPASSWD: /usr/bin/apt-get *
+pshkv ALL=(root) NOPASSWD: /usr/bin/dnf *
+pshkv ALL=(root) NOPASSWD: /usr/bin/pacman *
+pshkv ALL=(root) NOPASSWD: /usr/bin/zypper *
+pshkv ALL=(root) NOPASSWD: /usr/bin/apk *
+pshkv ALL=(root) NOPASSWD: /usr/bin/xbps-install *
+pshkv ALL=(root) NOPASSWD: /usr/local/bin/nft
+pshkv ALL=(root) NOPASSWD: /usr/local/bin/pkill *

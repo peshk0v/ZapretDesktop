@@ -200,8 +200,36 @@ def change_mode_ipset(mode: str) -> None:
 # ----------------------------------------------------------------------
 def is_service_running(service_name: str = "zapret-discord-youtube") -> bool:
     """
-    Проверяет, запущен ли сервис zapret, используя systemctl, pgrep или ps aux.
+    Проверяет, запущен ли сервис zapret.
     """
+    # Проверяем напрямую процесс nfqws
+    try:
+        result = subprocess.run(
+            ['pgrep', '-f', 'nfqws'],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False
+        )
+        if result.returncode == 0:
+            return True
+    except FileNotFoundError:
+        pass
+
+    # Проверяем через ps aux
+    try:
+        result = subprocess.run(
+            "ps aux | grep -v grep | grep -q 'nfqws'",
+            shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False
+        )
+        if result.returncode == 0:
+            return True
+    except Exception:
+        pass
+
+    # Проверяем systemd сервис
     try:
         result = subprocess.run(
             ['systemctl', 'is-active', service_name],
@@ -214,29 +242,7 @@ def is_service_running(service_name: str = "zapret-discord-youtube") -> bool:
     except FileNotFoundError:
         pass
 
-    try:
-        result = subprocess.run(
-            ['pgrep', '-f', service_name],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=False
-        )
-        if result.returncode == 0:
-            return True
-    except FileNotFoundError:
-        pass
-
-    try:
-        result = subprocess.run(
-            f"ps aux | grep -v grep | grep -q '{service_name}'",
-            shell=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=False
-        )
-        return result.returncode == 0
-    except Exception:
-        return False
+    return False
 
 
 def is_zapret_installed(service_names: list | str = None) -> bool:
@@ -346,6 +352,10 @@ def service_control(comd: int, args=None):
         case 2:
             run_cmd_sudo([str(SERVICE_PATH), "service", "remove"])
             log("ZAPRET REMOVED WITH SERVICE", 0)
+            return True
+
+        case 3:
+            return is_service_running()
 
         case 4:
             run_cmd_sudo([str(SERVICE_PATH), "service", "stop"])

@@ -54,7 +54,10 @@ def getCurrent() -> str:
 
 def getObName() -> str:
     """Возвращает имя текущей стратегии без расширения."""
-    return getCurrent()[:-4]
+    strategy = getCurrent()
+    if strategy.startswith('"') and strategy.endswith('"'):
+        strategy = strategy[1:-1]
+    return strategy[:-4]
 
 
 def setObName(nm: str) -> None:
